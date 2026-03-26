@@ -473,8 +473,49 @@
           <option>Hoog</option>
         </select>
       </div>
+      <div class="form-group">
+        <label>Verbrand (kcal) <span style="color:var(--muted);font-size:10px;">optioneel</span></label>
+        <input type="number" id="sport-burned" placeholder="bijv. 320" min="0">
+      </div>
     </div>
     <button class="btn btn-secondary" id="sport-save">Activiteit opslaan</button>
+  </div>
+
+  <!-- DRINKEN -->
+  <div class="section-header" style="margin-top:1.25rem;">
+    <div class="section-title">Drinken</div>
+    <div style="font-size:12px;color:var(--muted);" id="water-today-nav">0 ml vandaag</div>
+  </div>
+  <div class="card">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.875rem;" id="drink-quick-btns">
+      <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="150" data-cal="0">💧 Glas water<br><span style="font-size:10px;color:var(--muted);">150 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="250" data-cal="0">💧 Water<br><span style="font-size:10px;color:var(--muted);">250 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="500" data-cal="0">💧 Fles water<br><span style="font-size:10px;color:var(--muted);">500 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Koffie zwart" data-ml="150" data-cal="3">☕ Koffie<br><span style="font-size:10px;color:var(--muted);">150 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Koffie met melk" data-ml="200" data-cal="30">☕ Koffie + melk<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Thee" data-ml="250" data-cal="2">🍵 Thee<br><span style="font-size:10px;color:var(--muted);">250 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Groene thee" data-ml="250" data-cal="1">🍵 Groene thee<br><span style="font-size:10px;color:var(--muted);">250 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Sinaasappelsap" data-ml="200" data-cal="88">🍊 Sinaasappelsap<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:.875rem;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:.5rem;">Of aangepaste hoeveelheid:</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Drank</label>
+          <input type="text" id="drink-name" placeholder="bijv. Smoothie, Sportdrank...">
+        </div>
+        <div class="form-group" style="max-width:100px;">
+          <label>ml</label>
+          <input type="number" id="drink-ml" placeholder="250" min="1">
+        </div>
+        <div class="form-group" style="max-width:90px;">
+          <label>kcal</label>
+          <input type="number" id="drink-cal" placeholder="0" min="0">
+        </div>
+      </div>
+      <button class="btn btn-secondary" id="drink-custom-save">Toevoegen</button>
+    </div>
+    <div id="drink-alert" style="display:none;margin-top:.5rem;"></div>
   </div>
 
 </div>
@@ -487,11 +528,26 @@
     <div style="font-size:12px;color:var(--muted);" id="dash-date"></div>
   </div>
 
-  <div class="stat-grid">
+  <div class="stat-grid" style="grid-template-columns:repeat(5,minmax(0,1fr));">
     <div class="stat-box"><div class="label">Calorieën</div><div class="val cal" id="d-cal">0</div></div>
     <div class="stat-box"><div class="label">Eiwit (g)</div><div class="val prot" id="d-prot">0</div></div>
     <div class="stat-box"><div class="label">Koolhydraten (g)</div><div class="val carb" id="d-carb">0</div></div>
     <div class="stat-box"><div class="label">Vetten (g)</div><div class="val fat" id="d-fat">0</div></div>
+    <div class="stat-box"><div class="label">Vocht (ml)</div><div class="val" style="color:#60a5fa;" id="d-water">0</div></div>
+  </div>
+
+  <!-- VOCHTINNAME BAR -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+      <div style="font-size:12px;color:var(--muted);">Vochtinname vandaag</div>
+      <div style="font-size:12px;font-family:'DM Mono',monospace;" id="d-water-label">0 / 2000 ml</div>
+    </div>
+    <div style="background:var(--bg3);border-radius:3px;height:8px;overflow:hidden;">
+      <div id="water-bar" style="height:100%;background:linear-gradient(90deg,#60a5fa,#38bdf8);border-radius:3px;width:0%;transition:width .4s;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px;">
+      <span>0</span><span>500</span><span>1000</span><span>1500</span><span>2000 ml</span>
+    </div>
   </div>
 
   <div class="grid2">
@@ -551,6 +607,7 @@
   <div id="log-filter" style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
     <button class="btn btn-secondary btn-sm active-filter" data-filter="all">Alles</button>
     <button class="btn btn-secondary btn-sm" data-filter="meal">Maaltijden</button>
+    <button class="btn btn-secondary btn-sm" data-filter="drink">Drinken</button>
     <button class="btn btn-secondary btn-sm" data-filter="sugar">Bloedsuiker</button>
     <button class="btn btn-secondary btn-sm" data-filter="insulin">Insuline</button>
     <button class="btn btn-secondary btn-sm" data-filter="sport">Sport</button>
@@ -911,12 +968,21 @@ var FOOD_DB = [
 
 if(!STATE.favorites) STATE.favorites = [];
 if(!STATE.customFoods) STATE.customFoods = [];
+if(!STATE.recentFoods) STATE.recentFoods = [];
 var currentIngredients = [];
 var activeTab = 'invoer';
 
-// Merge built-in + custom foods
 function getAllFoods() {
   return FOOD_DB.concat(STATE.customFoods || []);
+}
+
+// ─── RECENT PRODUCTS ──────────────────────────────────────
+function addToRecent(food) {
+  if(!STATE.recentFoods) STATE.recentFoods = [];
+  STATE.recentFoods = STATE.recentFoods.filter(function(f){ return f.n !== food.n; });
+  STATE.recentFoods.unshift(food);
+  STATE.recentFoods = STATE.recentFoods.slice(0, 10);
+  save();
 }
 
 // ─── TABS ─────────────────────────────────────────────────
@@ -932,7 +998,7 @@ document.querySelectorAll('.tab-btn').forEach(function(btn){
   });
 });
 
-// ─── OPEN FOOD FACTS + BARCODE ────────────────────────────
+// ─── OPEN FOOD FACTS + ZOEKEN ─────────────────────────────
 var searchEl    = document.getElementById('food-search');
 var resultsEl   = document.getElementById('search-results');
 var manualPanel = document.getElementById('manual-add-panel');
@@ -943,65 +1009,88 @@ var scanStream  = null;
 var scanTimer   = null;
 var offSearchTimer = null;
 
-// Zoek in lokale DB
+// Lokale zoek — meerdere zoektermen ondersteunen
 function localSearch(q) {
   var all = getAllFoods();
-  return all.filter(function(f){ return f.n.toLowerCase().indexOf(q) >= 0; }).slice(0,5);
+  var terms = q.toLowerCase().split(/\s+/);
+  return all.filter(function(f){
+    var name = f.n.toLowerCase();
+    return terms.every(function(t){ return name.indexOf(t) >= 0; });
+  }).slice(0, 5);
 }
 
-// Open Food Facts API zoeken op naam
+// OFF product mappen inclusief portiegrootte
+function mapOFFProduct(p) {
+  var n = p.nutriments || {};
+  var cal100  = Math.round(n['energy-kcal_100g'] || (n['energy_100g'] ? n['energy_100g']/4.184 : 0) || 0);
+  var prot100 = Math.round((n['proteins_100g']||0)*10)/10;
+  var carb100 = Math.round((n['carbohydrates_100g']||0)*10)/10;
+  var fat100  = Math.round((n['fat_100g']||0)*10)/10;
+  var servingQty = parseFloat(p.serving_quantity) || 0;
+  var hasServing = servingQty > 5 && servingQty < 2000;
+  var name = (p.product_name||'').trim();
+  if(p.brands) {
+    var brand = p.brands.split(',')[0].trim();
+    if(name.toLowerCase().indexOf(brand.toLowerCase()) === -1) name = name + ' — ' + brand;
+  }
+  if(p.quantity) name += ' ('+p.quantity+')';
+  return {
+    n: name, cal: cal100, prot: prot100, carb: carb100, fat: fat100,
+    unit: 'g', std: 100,
+    servingQty:   hasServing ? servingQty : null,
+    servingLabel: hasServing ? (p.serving_size||null) : null,
+    off: true
+  };
+}
+
+// Open Food Facts zoeken op naam + merk, gesorteerd op populariteit
 async function offSearch(q) {
   try {
-    var url = 'https://world.openfoodfacts.org/cgi/search.pl?search_terms='
-      + encodeURIComponent(q)
-      + '&search_simple=1&action=process&json=1&page_size=6&lc=nl&cc=nl&fields=product_name,nutriments,brands,quantity';
+    var url = 'https://world.openfoodfacts.org/cgi/search.pl'
+      + '?search_terms=' + encodeURIComponent(q)
+      + '&search_simple=1&action=process&json=1&page_size=8&sort_by=unique_scans_n'
+      + '&fields=product_name,nutriments,brands,quantity,serving_size,serving_quantity';
     var r = await fetch(url);
     var data = await r.json();
     if(!data.products) return [];
     return data.products
       .filter(function(p){ return p.product_name && p.nutriments; })
-      .map(function(p){
-        var n = p.nutriments;
-        return {
-          n: p.product_name + (p.brands ? ' ('+p.brands+')' : '') + (p.quantity ? ' — '+p.quantity : ''),
-          cal:  Math.round(n['energy-kcal_100g'] || n['energy_100g']/4.184 || 0),
-          prot: Math.round((n['proteins_100g']||0)*10)/10,
-          carb: Math.round((n['carbohydrates_100g']||0)*10)/10,
-          fat:  Math.round((n['fat_100g']||0)*10)/10,
-          unit: 'g', std: 100, off: true
-        };
-      }).filter(function(f){ return f.cal > 0; });
+      .map(mapOFFProduct)
+      .filter(function(f){ return f.cal > 0 && f.n.trim().length > 0; });
   } catch(e) { return []; }
 }
 
-// Open Food Facts barcode lookup
+// Barcode lookup
 async function offBarcode(barcode) {
   try {
-    var url = 'https://world.openfoodfacts.org/api/v0/product/'+barcode+'.json?fields=product_name,nutriments,brands,quantity';
+    var url = 'https://world.openfoodfacts.org/api/v0/product/'+barcode
+      +'.json?fields=product_name,nutriments,brands,quantity,serving_size,serving_quantity';
     var r = await fetch(url);
     var data = await r.json();
     if(data.status !== 1 || !data.product) return null;
-    var p = data.product;
-    var n = p.nutriments || {};
-    return {
-      n: (p.product_name||'Onbekend product') + (p.brands?' ('+p.brands+')':'') + (p.quantity?' — '+p.quantity:''),
-      cal:  Math.round(n['energy-kcal_100g'] || n['energy_100g']/4.184 || 0),
-      prot: Math.round((n['proteins_100g']||0)*10)/10,
-      carb: Math.round((n['carbohydrates_100g']||0)*10)/10,
-      fat:  Math.round((n['fat_100g']||0)*10)/10,
-      unit: 'g', std: 100, off: true
-    };
+    return mapOFFProduct(data.product);
   } catch(e) { return null; }
 }
 
-function showResults(local, off, q) {
+function showResults(local, off, recent, q) {
   var html = '';
 
-  if(local.length) {
+  if(recent && recent.length && q.length < 2) {
+    html += '<div style="font-size:10px;color:var(--muted);padding:6px 12px 2px;text-transform:uppercase;letter-spacing:.05em;">Recent gebruikt</div>';
+    html += recent.slice(0,5).map(function(f, i){
+      var portie = f.servingLabel ? ' · '+f.servingLabel : '';
+      return '<div class="search-item" data-fi="'+i+'" data-src="recent">' +
+        '<span class="search-item-name">'+f.n+'</span>' +
+        '<span class="search-item-meta">'+f.cal+' kcal · '+f.prot+'g eiwit'+portie+'</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  if(local.length && q.length >= 2) {
     html += '<div style="font-size:10px;color:var(--muted);padding:6px 12px 2px;text-transform:uppercase;letter-spacing:.05em;">Mijn database</div>';
     html += local.map(function(f){
       var idx = getAllFoods().indexOf(f);
-      var tag = STATE.customFoods && STATE.customFoods.indexOf(f)>=0
+      var tag = STATE.customFoods && STATE.customFoods.indexOf(f) >= 0
         ? '<span style="font-size:10px;background:rgba(79,142,247,0.15);color:var(--accent);padding:1px 5px;border-radius:4px;margin-left:4px;">eigen</span>' : '';
       return '<div class="search-item" data-fi="'+idx+'" data-src="local">' +
         '<span class="search-item-name">'+f.n+tag+'</span>' +
@@ -1010,21 +1099,25 @@ function showResults(local, off, q) {
     }).join('');
   }
 
-  if(off.length) {
+  if(off.length && q.length >= 2) {
     html += '<div style="font-size:10px;color:var(--muted);padding:6px 12px 2px;text-transform:uppercase;letter-spacing:.05em;">Open Food Facts</div>';
     html += off.map(function(f, i){
+      var portie = f.servingLabel ? ' · portie: '+f.servingLabel : '';
       return '<div class="search-item" data-fi="'+i+'" data-src="off">' +
         '<span class="search-item-name">'+f.n+'</span>' +
-        '<span class="search-item-meta">'+f.cal+' kcal · '+f.prot+'g eiwit</span>' +
+        '<span class="search-item-meta">'+f.cal+' kcal · '+f.prot+'g eiwit'+portie+'</span>' +
       '</div>';
     }).join('');
   }
 
-  html += '<div class="search-item" id="manual-trigger" style="border-top:1px solid var(--border2);color:var(--accent);">' +
-    '<span class="search-item-name">+ "'+q+'" zelf toevoegen</span>' +
-    '<span class="search-item-meta">handmatig</span>' +
-  '</div>';
+  if(q.length >= 2) {
+    html += '<div class="search-item" id="manual-trigger" style="border-top:1px solid var(--border2);color:var(--accent);">' +
+      '<span class="search-item-name">+ "'+q+'" zelf toevoegen</span>' +
+      '<span class="search-item-meta">handmatig</span>' +
+    '</div>';
+  }
 
+  if(!html) { resultsEl.style.display='none'; return; }
   resultsEl.innerHTML = html;
   resultsEl.style.display = 'block';
 
@@ -1040,33 +1133,100 @@ function showResults(local, off, q) {
     } else if(item.dataset.src === 'local') {
       item.addEventListener('click', function(){
         var f = getAllFoods()[parseInt(item.dataset.fi)];
-        addIngredient(f);
+        addIngredient(f); addToRecent(f);
+        searchEl.value=''; resultsEl.style.display='none';
+      });
+    } else if(item.dataset.src === 'recent') {
+      item.addEventListener('click', function(){
+        var f = (STATE.recentFoods||[])[parseInt(item.dataset.fi)];
+        if(f){ addIngredient(f); addToRecent(f); }
         searchEl.value=''; resultsEl.style.display='none';
       });
     } else {
       item.addEventListener('click', function(){
         var f = off[parseInt(item.dataset.fi)];
-        addIngredient(f);
+        addIngredient(f); addToRecent(f);
         searchEl.value=''; resultsEl.style.display='none';
       });
     }
   });
 }
 
+searchEl.addEventListener('focus', function(){
+  var q = searchEl.value.trim();
+  if(q.length >= 2) return; // al aan het zoeken
+
+  var html = '';
+
+  // Top 5 meest gebruikte favorieten
+  var favs = STATE.favorites || [];
+  if(favs.length) {
+    // Sorteer op gebruiksfrequentie (usageCount), daarna op volgorde
+    var sorted = favs.slice().sort(function(a,b){ return (b.usageCount||0)-(a.usageCount||0); }).slice(0,5);
+    html += '<div style="font-size:10px;color:var(--muted);padding:6px 12px 2px;text-transform:uppercase;letter-spacing:.05em;">Favorieten</div>';
+    html += sorted.map(function(f, i){
+      return '<div class="search-item" data-fi="'+favs.indexOf(f)+'" data-src="fav">' +
+        '<span class="search-item-name">★ '+f.desc+'</span>' +
+        '<span class="search-item-meta">'+f.cal+' kcal · '+f.prot+'g eiwit</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Daarna recente producten
+  var recent = (STATE.recentFoods || []).slice(0,5);
+  if(recent.length) {
+    html += '<div style="font-size:10px;color:var(--muted);padding:6px 12px 2px;text-transform:uppercase;letter-spacing:.05em;">Recent gebruikt</div>';
+    html += recent.map(function(f, i){
+      var portie = f.servingLabel ? ' · '+f.servingLabel : '';
+      return '<div class="search-item" data-fi="'+i+'" data-src="recent">' +
+        '<span class="search-item-name">'+f.n+'</span>' +
+        '<span class="search-item-meta">'+f.cal+' kcal · '+f.prot+'g eiwit'+portie+'</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  if(!html) return;
+  resultsEl.innerHTML = html;
+  resultsEl.style.display = 'block';
+
+  resultsEl.querySelectorAll('.search-item').forEach(function(item){
+    if(item.dataset.src === 'fav') {
+      item.addEventListener('click', function(){
+        var fav = (STATE.favorites||[])[parseInt(item.dataset.fi)];
+        if(!fav) return;
+        // Verhoog gebruiksteller
+        fav.usageCount = (fav.usageCount||0) + 1;
+        save();
+        var food = { n:fav.desc, cal:fav.cal, prot:fav.prot, carb:fav.carb, fat:fav.fat, unit:'portie', std:1 };
+        addIngredient(food);
+        document.getElementById('meal-desc').value = fav.desc;
+        searchEl.value=''; resultsEl.style.display='none';
+      });
+    } else if(item.dataset.src === 'recent') {
+      item.addEventListener('click', function(){
+        var f = (STATE.recentFoods||[])[parseInt(item.dataset.fi)];
+        if(f){ addIngredient(f); addToRecent(f); }
+        searchEl.value=''; resultsEl.style.display='none';
+      });
+    }
+  });
+});
+
 searchEl.addEventListener('input', function(){
   clearTimeout(offSearchTimer);
   var q = searchEl.value.trim();
   manualPanel.style.display = 'none';
-  if(q.length < 2){ resultsEl.style.display='none'; return; }
-
-  // Direct lokale resultaten tonen
+  if(q.length < 2) {
+    var recent = STATE.recentFoods || [];
+    if(recent.length) showResults([], [], recent, q);
+    else resultsEl.style.display='none';
+    return;
+  }
   var local = localSearch(q.toLowerCase());
-  showResults(local, [], q);
-
-  // Na 400ms ook Open Food Facts bevragen
+  showResults(local, [], [], q);
   offSearchTimer = setTimeout(async function(){
     var off = await offSearch(q);
-    showResults(local, off, q);
+    showResults(local, off, [], q);
   }, 400);
 });
 
@@ -1217,7 +1377,9 @@ document.getElementById('manual-add-save').addEventListener('click', function(){
 
 // ─── INGREDIËNTEN ─────────────────────────────────────────
 function addIngredient(food) {
-  currentIngredients.push({ food:food, qty:food.std });
+  // Gebruik portiegrootte als standaard hoeveelheid als die beschikbaar is
+  var qty = food.servingQty || food.std;
+  currentIngredients.push({ food:food, qty:qty });
   renderIngredients();
   updatePreview();
   if(!document.getElementById('meal-desc').value)
@@ -1379,15 +1541,17 @@ document.getElementById('insulin-save').addEventListener('click', async function
 
 // ─── SPORT ────────────────────────────────────────────────
 document.getElementById('sport-save').addEventListener('click', async function(){
-  var desc = document.getElementById('sport-desc').value.trim();
-  var dur  = parseInt(document.getElementById('sport-dur').value)||0;
-  var int_ = document.getElementById('sport-int').value;
+  var desc    = document.getElementById('sport-desc').value.trim();
+  var dur     = parseInt(document.getElementById('sport-dur').value)||0;
+  var int_    = document.getElementById('sport-int').value;
+  var burned  = parseInt(document.getElementById('sport-burned').value)||null;
   if(!desc){ return; }
   setSyncStatus('saving');
-  await saveEntry({ kind:'sport', ts:fullTs(), desc:desc, dur:dur, intensity:int_ });
+  await saveEntry({ kind:'sport', ts:fullTs(), desc:desc, dur:dur, intensity:int_, burned:burned });
   setSyncStatus('ok');
   document.getElementById('sport-desc').value='';
   document.getElementById('sport-dur').value='';
+  document.getElementById('sport-burned').value='';
 });
 
 // ─── DASHBOARD ────────────────────────────────────────────
@@ -1404,7 +1568,18 @@ function renderDashboard(){
   document.getElementById('d-carb').textContent = Math.round(carb*10)/10;
   document.getElementById('d-fat').textContent  = Math.round(fat*10)/10;
 
-  // macro bar
+  // water/vocht
+  var drinks = today.filter(function(e){ return e.kind==='drink'; });
+  var waterTotal = drinks.reduce(function(s,e){ return s+(e.ml||0); },0);
+  var waterGoal = STATE.goals.waterGoal || 2000;
+  var waterPct = Math.min(100, Math.round(waterTotal/waterGoal*100));
+  var wEl = document.getElementById('d-water');
+  if(wEl) wEl.textContent = waterTotal;
+  var wLabel = document.getElementById('d-water-label');
+  if(wLabel) wLabel.textContent = waterTotal+' / '+waterGoal+' ml';
+  var wBar = document.getElementById('water-bar');
+  if(wBar) wBar.style.width = waterPct+'%';
+  updateWaterNav();
   var total = prot+carb+fat;
   if(total>0){
     var pp=Math.round(prot/total*100), cp=Math.round(carb/total*100), fp=100-pp-cp;
@@ -1525,10 +1700,14 @@ function renderLog(){
       cls='entry-insulin';
       content='<div class="type-tag">Insuline · '+e.type+'</div>'+
         '<div class="desc">'+e.units+' eenheden</div>';
+    } else if(e.kind==='drink'){
+      cls='entry-sport';
+      content='<div class="type-tag">Drinken</div>'+
+        '<div class="desc">'+e.drink+' — '+e.ml+' ml'+(e.cal?' · '+e.cal+' kcal':'')+'</div>';
     } else if(e.kind==='sport'){
       cls='entry-sport';
       content='<div class="type-tag">Sport · '+e.intensity+'</div>'+
-        '<div class="desc">'+e.desc+(e.dur?' · '+e.dur+' min':'')+'</div>';
+        '<div class="desc">'+e.desc+(e.dur?' · '+e.dur+' min':'')+(e.burned?' · 🔥 '+e.burned+' kcal verbrand':'')+'</div>';
     }
     return '<div class="log-entry '+cls+'">' +
       '<div style="flex:1;">'+content+'</div>' +
@@ -1627,7 +1806,47 @@ function checkReminders(){
   });
 }
 
-// ─── ACCOUNT KNOPPEN ──────────────────────────────────────
+// ─── DRINKEN ──────────────────────────────────────────────
+document.querySelectorAll('.drink-quick').forEach(function(btn){
+  btn.addEventListener('click', async function(){
+    var drink = btn.dataset.drink;
+    var ml    = parseInt(btn.dataset.ml)||0;
+    var cal   = Math.round(parseInt(btn.dataset.cal||0) * ml / 100);
+    setSyncStatus('saving');
+    await saveEntry({ kind:'drink', ts:fullTs(), drink:drink, ml:ml, cal:cal });
+    setSyncStatus('ok');
+    updateWaterNav();
+    var al = document.getElementById('drink-alert');
+    al.className='alert alert-success'; al.textContent=drink+' ('+ml+' ml) toegevoegd!';
+    al.style.display='block';
+    setTimeout(function(){ al.style.display='none'; },2000);
+  });
+});
+
+document.getElementById('drink-custom-save').addEventListener('click', async function(){
+  var name = document.getElementById('drink-name').value.trim() || 'Drank';
+  var ml   = parseInt(document.getElementById('drink-ml').value)||0;
+  var cal  = parseInt(document.getElementById('drink-cal').value)||0;
+  if(!ml){ return; }
+  setSyncStatus('saving');
+  await saveEntry({ kind:'drink', ts:fullTs(), drink:name, ml:ml, cal:cal });
+  setSyncStatus('ok');
+  document.getElementById('drink-name').value='';
+  document.getElementById('drink-ml').value='';
+  document.getElementById('drink-cal').value='';
+  updateWaterNav();
+  var al = document.getElementById('drink-alert');
+  al.className='alert alert-success'; al.textContent=name+' ('+ml+' ml) toegevoegd!';
+  al.style.display='block';
+  setTimeout(function(){ al.style.display='none'; },2000);
+});
+
+function updateWaterNav() {
+  var today = STATE.entries.filter(function(e){ return isToday(e.ts) && e.kind==='drink'; });
+  var total = today.reduce(function(s,e){ return s+(e.ml||0); },0);
+  var el = document.getElementById('water-today-nav');
+  if(el) el.textContent = total + ' ml vandaag';
+}
 document.getElementById('copy-uid-btn').addEventListener('click', function(){
   var uid = document.getElementById('user-uid').textContent;
   navigator.clipboard.writeText(uid).then(function(){
