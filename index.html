@@ -317,20 +317,65 @@
     <div style="font-size:12px;color:var(--muted);" id="water-today-nav">0 ml vandaag</div>
   </div>
   <div class="card">
+    <!-- Snelknoppen -->
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.875rem;">
-      <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="200" data-cal="0" style="flex:1;min-width:80px;text-align:center;">💧 Water<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
-      <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="500" data-cal="0" style="flex:1;min-width:80px;text-align:center;">💧 Fleswater<br><span style="font-size:10px;color:var(--muted);">500 ml</span></button>
-      <button class="btn btn-secondary drink-quick" data-drink="Thee" data-ml="200" data-cal="1" style="flex:1;min-width:80px;text-align:center;">🍵 Thee<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
-      <button class="btn btn-secondary drink-quick" data-drink="Koffie" data-ml="200" data-cal="3" style="flex:1;min-width:80px;text-align:center;">☕ Koffie<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="200" data-cal="0" data-prot="0" data-carb="0" data-fat="0" style="flex:1;min-width:80px;text-align:center;">💧 Water<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="500" data-cal="0" data-prot="0" data-carb="0" data-fat="0" style="flex:1;min-width:80px;text-align:center;">💧 Fleswater<br><span style="font-size:10px;color:var(--muted);">500 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Thee" data-ml="200" data-cal="1" data-prot="0" data-carb="0" data-fat="0" style="flex:1;min-width:80px;text-align:center;">🍵 Thee<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Koffie" data-ml="200" data-cal="3" data-prot="0" data-carb="0" data-fat="0" style="flex:1;min-width:80px;text-align:center;">☕ Koffie<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
     </div>
+
+    <!-- Zoekbalk dranken -->
     <div style="border-top:1px solid var(--border);padding-top:.875rem;">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:.5rem;">Aangepaste hoeveelheid:</div>
-      <div class="form-row">
-        <div class="form-group"><label>Drank</label><input type="text" id="drink-name" placeholder="bijv. Smoothie..."></div>
-        <div class="form-group" style="max-width:100px;"><label>ml</label><input type="number" id="drink-ml" placeholder="250" min="1"></div>
-        <div class="form-group" style="max-width:90px;"><label>kcal</label><input type="number" id="drink-cal" placeholder="0" min="0"></div>
+      <div class="form-group" style="margin-bottom:.5rem;">
+        <label>Zoek drank</label>
+        <div class="search-wrap">
+          <input type="text" id="drink-search" placeholder="bijv. cola, sportdrank, melk, sap..." autocomplete="off">
+          <div class="search-results" id="drink-search-results" style="display:none;"></div>
+        </div>
       </div>
-      <button class="btn btn-secondary" id="drink-custom-save">Toevoegen</button>
+
+      <!-- Geselecteerde drank preview -->
+      <div id="drink-selected" style="display:none;background:var(--bg3);border-radius:var(--radius-sm);padding:.75rem 1rem;margin-bottom:.75rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+          <div style="font-size:14px;font-weight:500;" id="drink-selected-name">—</div>
+          <button class="btn btn-danger btn-sm" id="drink-clear-selection">✕</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <div class="form-group" style="max-width:110px;margin:0;">
+            <label>Hoeveelheid (ml)</label>
+            <input type="number" id="drink-ml" placeholder="200" min="1" step="10" value="200">
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:18px;" id="drink-macros-preview">—</div>
+        </div>
+      </div>
+
+      <!-- Handmatig toevoegen (verschijnt als niets gevonden) -->
+      <div id="drink-manual-panel" style="display:none;background:var(--bg3);border-radius:var(--radius-sm);padding:.875rem;margin-bottom:.75rem;border:1px dashed var(--border2);">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:.625rem;">Niet gevonden — voeg zelf toe:</div>
+        <div class="form-group" style="margin-bottom:.5rem;"><label>Naam</label><input type="text" id="drink-manual-name" placeholder="bijv. Verse limonade"></div>
+        <div class="form-row" style="margin-bottom:.5rem;">
+          <div class="form-group"><label>ml</label><input type="number" id="drink-manual-ml" placeholder="200" min="1"></div>
+          <div class="form-group"><label>kcal</label><input type="number" id="drink-manual-cal" placeholder="0" min="0"></div>
+        </div>
+        <div class="form-row" style="margin-bottom:.75rem;">
+          <div class="form-group"><label>Eiwit (g)</label><input type="number" id="drink-manual-prot" placeholder="0" min="0" step="0.1"></div>
+          <div class="form-group"><label>Koolhydraten (g)</label><input type="number" id="drink-manual-carb" placeholder="0" min="0" step="0.1"></div>
+          <div class="form-group"><label>Vetten (g)</label><input type="number" id="drink-manual-fat" placeholder="0" min="0" step="0.1"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" id="drink-manual-add-once">Alleen toevoegen</button>
+          <button class="btn btn-primary btn-sm" id="drink-manual-add-save">Toevoegen & opslaan in database</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:flex-end;margin-top:.5rem;">
+        <div class="form-group" style="max-width:170px;margin:0;">
+          <label>Datum <span style="color:var(--muted);font-size:10px;">optioneel</span></label>
+          <input type="datetime-local" id="drink-date">
+        </div>
+        <button class="btn btn-primary" id="drink-save" style="flex:1;">Drank opslaan</button>
+      </div>
     </div>
     <div id="drink-alert" style="display:none;margin-top:.5rem;"></div>
   </div>
@@ -412,7 +457,11 @@
     </div>
 
     <div id="meal-alert" style="display:none;"></div>
-    <div style="display:flex;gap:8px;">
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+      <div class="form-group" style="max-width:170px;margin:0;">
+        <label>Datum <span style="color:var(--muted);font-size:10px;">optioneel</span></label>
+        <input type="datetime-local" id="meal-date">
+      </div>
       <button class="btn btn-secondary" id="meal-fav-btn" style="flex:0 0 auto;">☆ Favoriet</button>
       <button class="btn btn-primary" id="meal-save" style="flex:1;">Maaltijd opslaan</button>
     </div>
@@ -431,7 +480,13 @@
       </div>
       <div class="form-group"><label>Verbrand (kcal) <span style="color:var(--muted);font-size:10px;">optioneel</span></label><input type="number" id="sport-burned" placeholder="bijv. 320" min="0"></div>
     </div>
-    <button class="btn btn-secondary" id="sport-save">Activiteit opslaan</button>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+      <div class="form-group" style="max-width:170px;margin:0;">
+        <label>Datum <span style="color:var(--muted);font-size:10px;">optioneel</span></label>
+        <input type="datetime-local" id="sport-date">
+      </div>
+      <button class="btn btn-secondary" id="sport-save" style="flex:1;">Activiteit opslaan</button>
+    </div>
   </div>
 
   <!-- 4. SUIKER & INSULINE -->
@@ -450,7 +505,13 @@
       </div>
     </div>
     <div id="sugar-alert" style="display:none;"></div>
-    <button class="btn btn-secondary" id="sugar-save" style="width:100%;margin-bottom:.75rem;">Suiker opslaan</button>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:.75rem;">
+      <div class="form-group" style="max-width:170px;margin:0;">
+        <label>Datum <span style="color:var(--muted);font-size:10px;">optioneel</span></label>
+        <input type="datetime-local" id="sugar-date">
+      </div>
+      <button class="btn btn-secondary" id="sugar-save" style="flex:1;">Suiker opslaan</button>
+    </div>
     <div class="card-title" style="margin-top:.5rem;">Insuline (Omnipod)</div>
     <div class="form-row">
       <div class="form-group"><label>Eenheden</label><input type="number" id="insulin-units" placeholder="bijv. 4" min="0" step="0.5"></div>
@@ -460,7 +521,13 @@
         </select>
       </div>
     </div>
-    <button class="btn btn-secondary" id="insulin-save" style="width:100%;">Insuline opslaan</button>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+      <div class="form-group" style="max-width:170px;margin:0;">
+        <label>Datum <span style="color:var(--muted);font-size:10px;">optioneel</span></label>
+        <input type="datetime-local" id="insulin-date">
+      </div>
+      <button class="btn btn-secondary" id="insulin-save" style="flex:1;">Insuline opslaan</button>
+    </div>
   </div>
 
 </div>
@@ -498,24 +565,48 @@
     <div style="font-size:12px;color:var(--muted);" id="dash-date"></div>
   </div>
 
-  <!-- STATS -->
+  <!-- STATS + DOELEN -->
   <div class="stat-grid" style="grid-template-columns:repeat(5,minmax(0,1fr));">
-    <div class="stat-box"><div class="label">Calorieën</div><div class="val cal" id="d-cal">0</div></div>
-    <div class="stat-box"><div class="label">Eiwit (g)</div><div class="val prot" id="d-prot">0</div></div>
-    <div class="stat-box"><div class="label">Koolhydraten (g)</div><div class="val carb" id="d-carb">0</div></div>
-    <div class="stat-box"><div class="label">Vetten (g)</div><div class="val fat" id="d-fat">0</div></div>
-    <div class="stat-box"><div class="label">Vocht (ml)</div><div class="val" style="color:#60a5fa;" id="d-water">0</div></div>
+    <div class="stat-box"><div class="label">Calorieën</div><div class="val cal" id="d-cal">0</div><div style="font-size:10px;color:var(--muted);" id="d-cal-goal"></div></div>
+    <div class="stat-box"><div class="label">Eiwit (g)</div><div class="val prot" id="d-prot">0</div><div style="font-size:10px;color:var(--muted);" id="d-prot-goal"></div></div>
+    <div class="stat-box"><div class="label">Koolhydraten (g)</div><div class="val carb" id="d-carb">0</div><div style="font-size:10px;color:var(--muted);" id="d-carb-goal"></div></div>
+    <div class="stat-box"><div class="label">Vetten (g)</div><div class="val fat" id="d-fat">0</div><div style="font-size:10px;color:var(--muted);" id="d-fat-goal"></div></div>
+    <div class="stat-box"><div class="label">Vocht (ml)</div><div class="val" style="color:#60a5fa;" id="d-water">0</div><div style="font-size:10px;color:var(--muted);" id="d-water-goal"></div></div>
   </div>
 
-  <!-- VOCHTINNAME BAR -->
+  <!-- DOELEN BEWERKEN -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" id="dash-goals-toggle">
+      <div style="font-size:13px;font-weight:500;">Doelen instellen</div>
+      <div style="font-size:11px;color:var(--muted);" id="dash-goals-chevron">▼ uitklappen</div>
+    </div>
+    <div id="dash-goals-panel" style="display:none;margin-top:.875rem;border-top:1px solid var(--border);padding-top:.875rem;">
+      <div class="form-row">
+        <div class="form-group"><label>Calorieën doel</label><input type="number" id="dg-cal" placeholder="2000"></div>
+        <div class="form-group"><label>Eiwit doel (g)</label><input type="number" id="dg-prot" placeholder="100"></div>
+        <div class="form-group"><label>Koolhydraten doel (g)</label><input type="number" id="dg-carb" placeholder="250"></div>
+        <div class="form-group"><label>Vetten doel (g)</label><input type="number" id="dg-fat" placeholder="70"></div>
+        <div class="form-group"><label>Vocht doel (ml)</label><input type="number" id="dg-water" placeholder="2000"></div>
+      </div>
+      <button class="btn btn-primary btn-sm" id="dash-save-goals">Opslaan</button>
+      <div id="dash-goals-alert" style="display:none;margin-top:.5rem;"></div>
+    </div>
+  </div>
+
+  <!-- MACRO GRAFIEK -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">Macro verdeling</div>
+    <canvas id="macro-chart" height="180"></canvas>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:.75rem;font-size:12px;" id="macro-legend"></div>
+  </div>
+
+  <!-- VOCHTINNAME GRAFIEK -->
   <div class="card" style="margin-bottom:1rem;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
       <div style="font-size:12px;color:var(--muted);">Vochtinname</div>
       <div style="font-size:12px;font-family:'DM Mono',monospace;" id="d-water-label">0 / 2000 ml</div>
     </div>
-    <div style="background:var(--bg3);border-radius:3px;height:8px;overflow:hidden;">
-      <div id="water-bar" style="height:100%;background:linear-gradient(90deg,#60a5fa,#38bdf8);border-radius:3px;width:0%;transition:width .4s;"></div>
-    </div>
+    <canvas id="water-chart" height="80"></canvas>
   </div>
 
   <div class="grid2">
@@ -534,21 +625,6 @@
         <div style="font-size:12px;color:var(--muted);margin-left:6px;">eenheden</div>
       </div>
       <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="d-insulin-label">totaal bolus</div>
-    </div>
-  </div>
-
-  <!-- MACRO VERDELING -->
-  <div class="card" style="margin-top:1rem;">
-    <div class="card-title">Macro verdeling</div>
-    <div class="macro-bar" id="macro-bar">
-      <div class="macro-bar-seg" style="background:var(--accent2);width:33%"></div>
-      <div class="macro-bar-seg" style="background:var(--warning);width:33%"></div>
-      <div class="macro-bar-seg" style="background:var(--accent3);width:34%"></div>
-    </div>
-    <div style="display:flex;gap:16px;font-size:12px;margin-top:6px;">
-      <span style="color:var(--accent2);">■ Eiwit</span>
-      <span style="color:var(--warning);">■ Koolh</span>
-      <span style="color:var(--accent3);">■ Vetten</span>
     </div>
   </div>
 
@@ -823,6 +899,11 @@ function pad(n){ return String(n).padStart(2,'0'); }
 function timeStr(d){ d=d||new Date(); return pad(d.getHours())+':'+pad(d.getMinutes()); }
 function dateStr(d){ d=d||new Date(); return d.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'}); }
 function fullTs(d){ d=d||new Date(); return d.toISOString(); }
+function tsFromInput(inputId) {
+  var v = document.getElementById(inputId) ? document.getElementById(inputId).value : '';
+  if(v) return new Date(v).toISOString();
+  return fullTs();
+}
 function displayTs(iso){
   var d=new Date(iso);
   return pad(d.getHours())+':'+pad(d.getMinutes())+' · '+d.toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
@@ -1471,7 +1552,7 @@ document.getElementById('meal-save').addEventListener('click', async function(){
   var m = getMealData();
   if(!m){ showAlert('meal-alert','Voeg minimaal één ingrediënt of product toe.','danger'); return; }
   var type = document.getElementById('meal-type').value;
-  var entry = { kind:'meal', ts:fullTs(), desc:m.desc, type:type, cal:m.cal, prot:m.prot, carb:m.carb, fat:m.fat };
+  var entry = { kind:'meal', ts:tsFromInput('meal-date'), desc:m.desc, type:type, cal:m.cal, prot:m.prot, carb:m.carb, fat:m.fat };
   setSyncStatus('saving');
   await saveEntry(entry);
   setSyncStatus('ok');
@@ -1487,7 +1568,7 @@ document.getElementById('sugar-save').addEventListener('click', async function()
   var moment = document.getElementById('sugar-moment').value;
   if(!val||val<1||val>30){ showAlert('sugar-alert','Vul een geldige suikerwaarde in (1–30 mmol/L).','danger'); return; }
   setSyncStatus('saving');
-  await saveEntry({ kind:'sugar', ts:fullTs(), val:val, moment:moment });
+  await saveEntry({ kind:'sugar', ts:tsFromInput('sugar-date'), val:val, moment:moment });
   setSyncStatus('ok');
   showAlert('sugar-alert','Bloedsuiker opgeslagen!','success');
   document.getElementById('sugar-val').value='';
@@ -1499,7 +1580,7 @@ document.getElementById('insulin-save').addEventListener('click', async function
   var type  = document.getElementById('insulin-type').value;
   if(!units||units<=0){ return; }
   setSyncStatus('saving');
-  await saveEntry({ kind:'insulin', ts:fullTs(), units:units, type:type });
+  await saveEntry({ kind:'insulin', ts:tsFromInput('insulin-date'), units:units, type:type });
   setSyncStatus('ok');
   document.getElementById('insulin-units').value='';
   var el=document.getElementById('sugar-alert');
@@ -1515,7 +1596,7 @@ document.getElementById('sport-save').addEventListener('click', async function()
   var burned  = parseInt(document.getElementById('sport-burned').value)||null;
   if(!desc){ return; }
   setSyncStatus('saving');
-  await saveEntry({ kind:'sport', ts:fullTs(), desc:desc, dur:dur, intensity:int_, burned:burned });
+  await saveEntry({ kind:'sport', ts:tsFromInput('sport-date'), desc:desc, dur:dur, intensity:int_, burned:burned });
   setSyncStatus('ok');
   document.getElementById('sport-desc').value='';
   document.getElementById('sport-dur').value='';
@@ -1598,28 +1679,35 @@ function renderDashboard(){
   document.getElementById('d-carb').textContent = Math.round(carb*10)/10;
   document.getElementById('d-fat').textContent  = Math.round(fat*10)/10;
 
+  // Doel labels onder stats
+  var goalCal  = STATE.goals.cal||2000;
+  var goalProt = STATE.goals.prot||100;
+  var goalCarb = STATE.goals.carb||250;
+  var goalFat  = STATE.goals.fat||70;
+  function goalLabel(val, goal, unit) {
+    var pct = goal>0 ? Math.round(val/goal*100) : 0;
+    return pct+'% van '+goal+unit;
+  }
+  var gc=document.getElementById('d-cal-goal');   if(gc)  gc.textContent  = goalLabel(cal, goalCal, ' kcal');
+  var gp=document.getElementById('d-prot-goal');  if(gp)  gp.textContent  = goalLabel(prot, goalProt, 'g');
+  var gcb=document.getElementById('d-carb-goal'); if(gcb) gcb.textContent = goalLabel(carb, goalCarb, 'g');
+  var gf=document.getElementById('d-fat-goal');   if(gf)  gf.textContent  = goalLabel(fat, goalFat, 'g');
+
   // water/vocht
   var drinks = filtered.filter(function(e){ return e.kind==='drink'; });
   var waterTotal = drinks.reduce(function(s,e){ return s+(e.ml||0); },0);
   var waterGoal = (STATE.goals.waterGoal||2000) * (dashPeriod==='week'?7:1);
-  var waterPct = Math.min(100, Math.round(waterTotal/waterGoal*100));
   var wEl = document.getElementById('d-water');
   if(wEl) wEl.textContent = waterTotal;
+  var gwEl = document.getElementById('d-water-goal');
+  if(gwEl) gwEl.textContent = goalLabel(waterTotal, waterGoal, 'ml');
   var wLabel = document.getElementById('d-water-label');
   if(wLabel) wLabel.textContent = waterTotal+' / '+waterGoal+' ml';
-  var wBar = document.getElementById('water-bar');
-  if(wBar) wBar.style.width = waterPct+'%';
   updateWaterNav();
 
-  // macro bar
-  var total = prot+carb+fat;
-  if(total>0){
-    var pp=Math.round(prot/total*100), cp=Math.round(carb/total*100), fp=100-pp-cp;
-    var bar=document.getElementById('macro-bar');
-    bar.children[0].style.width=pp+'%';
-    bar.children[1].style.width=cp+'%';
-    bar.children[2].style.width=fp+'%';
-  }
+  // Grafieken
+  renderMacroChart(prot, carb, fat, goalProt, goalCarb, goalFat);
+  renderWaterChart(waterTotal, waterGoal, drinks);
 
   // suiker
   var sugars = filtered.filter(function(e){ return e.kind==='sugar'; });
@@ -1676,6 +1764,148 @@ function renderDashboard(){
       '</div>';
     }).join('');
   }
+}
+
+// ─── DASHBOARD DOELEN PANEL ───────────────────────────────
+document.getElementById('dash-goals-toggle').addEventListener('click', function(){
+  var panel = document.getElementById('dash-goals-panel');
+  var chev  = document.getElementById('dash-goals-chevron');
+  var open  = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  chev.textContent = open ? '▼ uitklappen' : '▲ inklappen';
+  if(!open) {
+    document.getElementById('dg-cal').value   = STATE.goals.cal||'';
+    document.getElementById('dg-prot').value  = STATE.goals.prot||'';
+    document.getElementById('dg-carb').value  = STATE.goals.carb||'';
+    document.getElementById('dg-fat').value   = STATE.goals.fat||'';
+    document.getElementById('dg-water').value = STATE.goals.waterGoal||2000;
+  }
+});
+
+document.getElementById('dash-save-goals').addEventListener('click', function(){
+  STATE.goals.cal       = parseFloat(document.getElementById('dg-cal').value)||2000;
+  STATE.goals.prot      = parseFloat(document.getElementById('dg-prot').value)||100;
+  STATE.goals.carb      = parseFloat(document.getElementById('dg-carb').value)||250;
+  STATE.goals.fat       = parseFloat(document.getElementById('dg-fat').value)||70;
+  STATE.goals.waterGoal = parseFloat(document.getElementById('dg-water').value)||2000;
+  save();
+  var al = document.getElementById('dash-goals-alert');
+  al.className='alert alert-success'; al.textContent='Doelen opgeslagen!';
+  al.style.display='block';
+  setTimeout(function(){ al.style.display='none'; },2000);
+  renderDashboard();
+  loadGoals();
+});
+
+// ─── CHART.JS ─────────────────────────────────────────────
+var macroChartInst = null;
+var waterChartInst = null;
+
+function loadChartJS(cb) {
+  if(window.Chart){ cb(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+  s.onload = cb;
+  document.head.appendChild(s);
+}
+
+function renderMacroChart(prot, carb, fat, goalProt, goalCarb, goalFat) {
+  loadChartJS(function(){
+    var ctx = document.getElementById('macro-chart');
+    if(!ctx) return;
+    if(macroChartInst) macroChartInst.destroy();
+    var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var textColor = isDark ? '#eef0f5' : '#374151';
+    var gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    macroChartInst = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Eiwit ('+Math.round(prot)+'g)','Koolhydraten ('+Math.round(carb)+'g)','Vetten ('+Math.round(fat)+'g)'],
+        datasets: [
+          { label:'Huidig', data:[prot,carb,fat], backgroundColor:['rgba(110,231,183,0.85)','rgba(251,191,36,0.85)','rgba(249,115,22,0.85)'], borderRadius:6, borderSkipped:false },
+          { label:'Doel',   data:[goalProt,goalCarb,goalFat], backgroundColor:['rgba(110,231,183,0.2)','rgba(251,191,36,0.2)','rgba(249,115,22,0.2)'], borderRadius:6, borderSkipped:false }
+        ]
+      },
+      options: {
+        responsive:true,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{
+          legend:{ labels:{ color:textColor, font:{size:11} } },
+          tooltip:{ callbacks:{
+            label:function(c){ return c.dataset.label+': '+Math.round(c.raw)+'g'; },
+            afterBody:function(items){
+              var cur=items.find(function(i){return i.datasetIndex===0;});
+              var goal=items.find(function(i){return i.datasetIndex===1;});
+              if(cur&&goal&&goal.raw>0) return ['',Math.round(cur.raw/goal.raw*100)+'% van doel'];
+              return [];
+            }
+          }}
+        },
+        scales:{
+          x:{ ticks:{color:textColor,font:{size:11}}, grid:{color:gridColor} },
+          y:{ ticks:{color:textColor,font:{size:11},callback:function(v){return v+'g';}}, grid:{color:gridColor}, beginAtZero:true }
+        }
+      }
+    });
+    var total=prot+carb+fat;
+    var leg=document.getElementById('macro-legend');
+    if(leg) leg.innerHTML=[
+      {l:'Eiwit',v:prot,c:'#6ee7b7'},{l:'Koolh',v:carb,c:'#fbbf24'},{l:'Vetten',v:fat,c:'#f97316'}
+    ].map(function(m){
+      var pct=total>0?Math.round(m.v/total*100):0;
+      return '<span style="color:'+m.c+';">■ '+m.l+' '+Math.round(m.v)+'g ('+pct+'%)</span>';
+    }).join('');
+  });
+}
+
+function renderWaterChart(waterTotal, waterGoal, drinks) {
+  loadChartJS(function(){
+    var ctx = document.getElementById('water-chart');
+    if(!ctx) return;
+    if(waterChartInst) waterChartInst.destroy();
+    var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var textColor = isDark ? '#eef0f5' : '#374151';
+    var gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    var sorted = drinks.slice().sort(function(a,b){ return new Date(a.ts)-new Date(b.ts); });
+    var cumulative=0, labels=['start'], data=[0];
+    sorted.forEach(function(d){
+      cumulative += (d.ml||0);
+      var t=new Date(d.ts);
+      labels.push(pad(t.getHours())+':'+pad(t.getMinutes())+' '+d.drink);
+      data.push(cumulative);
+    });
+    waterChartInst = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels:labels,
+        datasets:[
+          { label:'Vocht (ml)', data:data, borderColor:'#60a5fa', backgroundColor:'rgba(96,165,250,0.12)', fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:'#60a5fa' },
+          { label:'Doel '+waterGoal+'ml', data:labels.map(function(){return waterGoal;}), borderColor:'rgba(96,165,250,0.3)', borderDash:[5,5], pointRadius:0, fill:false }
+        ]
+      },
+      options:{
+        responsive:true,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{
+          legend:{ labels:{ color:textColor, font:{size:11} } },
+          tooltip:{ callbacks:{
+            label:function(c){ return c.datasetIndex===0?'Totaal: '+c.raw+' ml':'Doel: '+c.raw+' ml'; },
+            afterLabel:function(c){
+              if(c.datasetIndex===0&&c.dataIndex>0){
+                var d=sorted[c.dataIndex-1];
+                return d?'+'+d.ml+'ml '+d.drink:'';
+              }
+              return '';
+            }
+          }}
+        },
+        scales:{
+          x:{ ticks:{color:textColor,font:{size:10},maxRotation:30}, grid:{color:gridColor} },
+          y:{ ticks:{color:textColor,font:{size:10},callback:function(v){return v+'ml';}}, grid:{color:gridColor}, beginAtZero:true }
+        }
+      }
+    });
+  });
 }
 
 // ─── LOGBOEK ──────────────────────────────────────────────
@@ -1836,39 +2066,261 @@ function checkReminders(){
 }
 
 // ─── DRINKEN ──────────────────────────────────────────────
+
+// Dranken in lokale DB + OFF categorieën
+var DRINK_KEYWORDS = ['water','sap','juice','drank','drink','cola','limonade','thee','koffie','coffee','tea',
+  'melk','milk','smoothie','shake','bier','beer','wijn','wine','frisdrank','sport','energy','soda'];
+
+function isDrink(food) {
+  if(food.unit==='ml') return true;
+  var name = food.n.toLowerCase();
+  return DRINK_KEYWORDS.some(function(k){ return name.indexOf(k)>=0; });
+}
+
+function localDrinkSearch(q) {
+  var all = getAllFoods();
+  var terms = q.toLowerCase().split(/\s+/);
+  return all.filter(function(f){
+    var name = f.n.toLowerCase();
+    return isDrink(f) && terms.every(function(t){ return name.indexOf(t)>=0; });
+  }).slice(0,5);
+}
+
+async function offDrinkSearch(q) {
+  try {
+    var url = 'https://world.openfoodfacts.org/cgi/search.pl'
+      + '?search_terms=' + encodeURIComponent(q)
+      + '&search_simple=1&action=process&json=1&page_size=8&sort_by=unique_scans_n'
+      + '&fields=product_name,nutriments,brands,quantity,serving_size,serving_quantity,categories_tags';
+    var r = await fetch(url);
+    var data = await r.json();
+    if(!data.products) return [];
+    return data.products
+      .filter(function(p){
+        if(!p.product_name || !p.nutriments) return false;
+        // Filter op drank-categorieën van OFF
+        var cats = (p.categories_tags||[]).join(' ');
+        var name = (p.product_name||'').toLowerCase();
+        var isDrinkProduct = cats.indexOf('beverages')>=0 || cats.indexOf('drinks')>=0
+          || cats.indexOf('waters')>=0 || cats.indexOf('juices')>=0
+          || cats.indexOf('sodas')>=0 || cats.indexOf('coffees')>=0
+          || cats.indexOf('teas')>=0 || cats.indexOf('milks')>=0
+          || cats.indexOf('smoothies')>=0 || cats.indexOf('beers')>=0
+          || cats.indexOf('wines')>=0 || cats.indexOf('dranken')>=0
+          || DRINK_KEYWORDS.some(function(k){ return name.indexOf(k)>=0; });
+        return isDrinkProduct;
+      })
+      .map(function(p){ return mapOFFProduct(p); })
+      .filter(function(f){ return f.n.trim().length > 0; });
+  } catch(e) { return []; }
+}
+
+// Huidige geselecteerde drank voor de zoeksectie
+var selectedDrink = null;
+var drinkSearchTimer = null;
+
+var drinkSearchEl  = document.getElementById('drink-search');
+var drinkResultsEl = document.getElementById('drink-search-results');
+var drinkManPanel  = document.getElementById('drink-manual-panel');
+var drinkSelected  = document.getElementById('drink-selected');
+
+function setSelectedDrink(food) {
+  selectedDrink = food;
+  drinkSelected.style.display = 'block';
+  drinkManPanel.style.display = 'none';
+  document.getElementById('drink-selected-name').textContent = food.n;
+  updateDrinkPreview();
+}
+
+function updateDrinkPreview() {
+  if(!selectedDrink) return;
+  var ml = parseFloat(document.getElementById('drink-ml').value)||200;
+  var ratio = ml / (selectedDrink.std||100);
+  var cal  = Math.round(selectedDrink.cal  * ratio);
+  var prot = Math.round(selectedDrink.prot * ratio * 10)/10;
+  var carb = Math.round(selectedDrink.carb * ratio * 10)/10;
+  var fat  = Math.round(selectedDrink.fat  * ratio * 10)/10;
+  document.getElementById('drink-macros-preview').textContent =
+    cal+' kcal · '+prot+'g eiwit · '+carb+'g koolh · '+fat+'g vet';
+}
+
+document.getElementById('drink-ml').addEventListener('input', updateDrinkPreview);
+
+document.getElementById('drink-clear-selection').addEventListener('click', function(){
+  selectedDrink = null;
+  drinkSelected.style.display = 'none';
+  drinkSearchEl.value = '';
+});
+
+drinkSearchEl.addEventListener('input', function(){
+  clearTimeout(drinkSearchTimer);
+  var q = drinkSearchEl.value.trim();
+  drinkManPanel.style.display = 'none';
+  if(q.length < 2){ drinkResultsEl.style.display='none'; return; }
+
+  var local = localDrinkSearch(q);
+  renderDrinkResults(local, [], q);
+
+  drinkSearchTimer = setTimeout(async function(){
+    var off = await offDrinkSearch(q);
+    renderDrinkResults(local, off, q);
+  }, 400);
+});
+
+document.addEventListener('click', function(e){
+  if(!e.target.closest('#drink-search') && !e.target.closest('#drink-search-results'))
+    drinkResultsEl.style.display='none';
+});
+
+function renderDrinkResults(local, off, q) {
+  var html = '';
+  if(local.length) {
+    html += '<div style="font-size:10px;color:var(--muted);padding:6px 12px 2px;text-transform:uppercase;letter-spacing:.05em;">Mijn database</div>';
+    html += local.map(function(f){
+      var idx = getAllFoods().indexOf(f);
+      return '<div class="search-item" data-fi="'+idx+'" data-src="local">'+
+        '<span class="search-item-name">'+f.n+'</span>'+
+        '<span class="search-item-meta">'+f.cal+' kcal/100ml</span>'+
+      '</div>';
+    }).join('');
+  }
+  if(off.length) {
+    html += '<div style="font-size:10px;color:var(--muted);padding:6px 12px 2px;text-transform:uppercase;letter-spacing:.05em;">Open Food Facts</div>';
+    html += off.map(function(f,i){
+      return '<div class="search-item" data-fi="'+i+'" data-src="off">'+
+        '<span class="search-item-name">'+f.n+'</span>'+
+        '<span class="search-item-meta">'+f.cal+' kcal/100ml</span>'+
+      '</div>';
+    }).join('');
+  }
+  html += '<div class="search-item" id="drink-manual-trigger" style="border-top:1px solid var(--border2);color:var(--accent);">'+
+    '<span class="search-item-name">+ "'+q+'" zelf toevoegen</span>'+
+    '<span class="search-item-meta">handmatig</span>'+
+  '</div>';
+
+  drinkResultsEl.innerHTML = html;
+  drinkResultsEl.style.display = 'block';
+
+  drinkResultsEl.querySelectorAll('.search-item').forEach(function(item){
+    if(item.id==='drink-manual-trigger'){
+      item.addEventListener('click', function(){
+        document.getElementById('drink-manual-name').value = drinkSearchEl.value;
+        drinkManPanel.style.display='block';
+        drinkResultsEl.style.display='none';
+        drinkSearchEl.value='';
+        document.getElementById('drink-manual-ml').focus();
+      });
+    } else if(item.dataset.src==='local') {
+      item.addEventListener('click', function(){
+        setSelectedDrink(getAllFoods()[parseInt(item.dataset.fi)]);
+        drinkSearchEl.value=''; drinkResultsEl.style.display='none';
+      });
+    } else {
+      item.addEventListener('click', function(){
+        setSelectedDrink(off[parseInt(item.dataset.fi)]);
+        drinkSearchEl.value=''; drinkResultsEl.style.display='none';
+      });
+    }
+  });
+}
+
+// Snelknoppen — direct opslaan
 document.querySelectorAll('.drink-quick').forEach(function(btn){
   btn.addEventListener('click', async function(){
     var drink = btn.dataset.drink;
     var ml    = parseInt(btn.dataset.ml)||0;
-    var cal   = Math.round(parseInt(btn.dataset.cal||0) * ml / 100);
+    var cal   = parseInt(btn.dataset.cal||0);
+    var prot  = parseFloat(btn.dataset.prot||0);
+    var carb  = parseFloat(btn.dataset.carb||0);
+    var fat   = parseFloat(btn.dataset.fat||0);
     setSyncStatus('saving');
-    await saveEntry({ kind:'drink', ts:fullTs(), drink:drink, ml:ml, cal:cal });
+    await saveEntry({ kind:'drink', ts:fullTs(), drink:drink, ml:ml, cal:cal, prot:prot, carb:carb, fat:fat });
     setSyncStatus('ok');
     updateWaterNav();
-    var al = document.getElementById('drink-alert');
-    al.className='alert alert-success'; al.textContent=drink+' ('+ml+' ml) toegevoegd!';
-    al.style.display='block';
-    setTimeout(function(){ al.style.display='none'; },2000);
+    showDrinkAlert(drink+' ('+ml+' ml) toegevoegd!', 'success');
   });
 });
 
-document.getElementById('drink-custom-save').addEventListener('click', async function(){
-  var name = document.getElementById('drink-name').value.trim() || 'Drank';
-  var ml   = parseInt(document.getElementById('drink-ml').value)||0;
-  var cal  = parseInt(document.getElementById('drink-cal').value)||0;
-  if(!ml){ return; }
+// Opslaan via zoeken
+document.getElementById('drink-save').addEventListener('click', async function(){
+  if(!selectedDrink){
+    showDrinkAlert('Selecteer eerst een drank via de zoekbalk of snelknoppen.', 'danger');
+    return;
+  }
+  var savedDrink = selectedDrink;
+  var ml    = parseFloat(document.getElementById('drink-ml').value)||200;
+  var ratio = ml / (savedDrink.std||100);
+  var cal   = Math.round(savedDrink.cal  * ratio);
+  var prot  = Math.round(savedDrink.prot * ratio * 10)/10;
+  var carb  = Math.round(savedDrink.carb * ratio * 10)/10;
+  var fat   = Math.round(savedDrink.fat  * ratio * 10)/10;
   setSyncStatus('saving');
-  await saveEntry({ kind:'drink', ts:fullTs(), drink:name, ml:ml, cal:cal });
+  await saveEntry({ kind:'drink', ts:tsFromInput('drink-date'), drink:savedDrink.n, ml:ml, cal:cal, prot:prot, carb:carb, fat:fat });
   setSyncStatus('ok');
-  document.getElementById('drink-name').value='';
-  document.getElementById('drink-ml').value='';
-  document.getElementById('drink-cal').value='';
+  selectedDrink = null;
+  drinkSelected.style.display='none';
+  document.getElementById('drink-ml').value='200';
   updateWaterNav();
-  var al = document.getElementById('drink-alert');
-  al.className='alert alert-success'; al.textContent=name+' ('+ml+' ml) toegevoegd!';
-  al.style.display='block';
-  setTimeout(function(){ al.style.display='none'; },2000);
+  showDrinkAlert(savedDrink.n+' ('+ml+' ml) toegevoegd!', 'success');
 });
+
+// Handmatig toevoegen
+function getDrinkManualData() {
+  var name = document.getElementById('drink-manual-name').value.trim();
+  var ml   = parseFloat(document.getElementById('drink-manual-ml').value)||0;
+  var cal  = parseFloat(document.getElementById('drink-manual-cal').value)||0;
+  var prot = parseFloat(document.getElementById('drink-manual-prot').value)||0;
+  var carb = parseFloat(document.getElementById('drink-manual-carb').value)||0;
+  var fat  = parseFloat(document.getElementById('drink-manual-fat').value)||0;
+  if(!name||!ml) return null;
+  return { name:name, ml:ml, cal:cal, prot:prot, carb:carb, fat:fat };
+}
+
+function clearDrinkManual() {
+  ['drink-manual-name','drink-manual-ml','drink-manual-cal','drink-manual-prot','drink-manual-carb','drink-manual-fat']
+    .forEach(function(id){ document.getElementById(id).value=''; });
+  drinkManPanel.style.display='none';
+}
+
+document.getElementById('drink-manual-add-once').addEventListener('click', async function(){
+  var d = getDrinkManualData();
+  if(!d){ showDrinkAlert('Vul minimaal een naam en hoeveelheid in.','danger'); return; }
+  setSyncStatus('saving');
+  await saveEntry({ kind:'drink', ts:fullTs(), drink:d.name, ml:d.ml, cal:d.cal, prot:d.prot, carb:d.carb, fat:d.fat });
+  setSyncStatus('ok');
+  clearDrinkManual(); updateWaterNav();
+  showDrinkAlert(d.name+' ('+d.ml+' ml) toegevoegd!','success');
+});
+
+document.getElementById('drink-manual-add-save').addEventListener('click', async function(){
+  var d = getDrinkManualData();
+  if(!d){ showDrinkAlert('Vul minimaal een naam en hoeveelheid in.','danger'); return; }
+  // Opslaan in custom foods als drank (per 100ml)
+  if(!STATE.customFoods) STATE.customFoods=[];
+  var exists = STATE.customFoods.some(function(f){ return f.n.toLowerCase()===d.name.toLowerCase(); });
+  if(!exists) {
+    var per100 = d.ml > 0 ? 100/d.ml : 1;
+    STATE.customFoods.push({
+      n: d.name, cal: Math.round(d.cal*per100), prot: Math.round(d.prot*per100*10)/10,
+      carb: Math.round(d.carb*per100*10)/10, fat: Math.round(d.fat*per100*10)/10,
+      unit:'ml', std:100, custom:true
+    });
+    save();
+  }
+  setSyncStatus('saving');
+  await saveEntry({ kind:'drink', ts:fullTs(), drink:d.name, ml:d.ml, cal:d.cal, prot:d.prot, carb:d.carb, fat:d.fat });
+  setSyncStatus('ok');
+  clearDrinkManual(); updateWaterNav();
+  showDrinkAlert('"'+d.name+'" opgeslagen in database en toegevoegd!','success');
+});
+
+function showDrinkAlert(msg, type) {
+  var al = document.getElementById('drink-alert');
+  al.className='alert alert-'+type;
+  al.textContent=msg;
+  al.style.display='block';
+  setTimeout(function(){ al.style.display='none'; },2500);
+}
 
 function updateWaterNav() {
   var today = STATE.entries.filter(function(e){ return isToday(e.ts) && e.kind==='drink'; });
