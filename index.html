@@ -1078,7 +1078,7 @@
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 // ─── FIREBASE INIT ────────────────────────────────────────
 const firebaseConfig = {
@@ -1093,11 +1093,6 @@ const fbApp = initializeApp(firebaseConfig);
 const db    = getFirestore(fbApp);
 const auth  = getAuth(fbApp);
 const provider = new GoogleAuthProvider();
-
-// Afhandelen van Google redirect na terugkomst
-getRedirectResult(auth).catch(function(e){
-  if(e && e.code) console.error('Redirect fout:', e.code, e.message);
-});
 
 // ─── ADMIN ────────────────────────────────────────────────
 // Permanente admin — kan nooit worden verwijderd
@@ -1368,14 +1363,14 @@ document.getElementById('register-tab-btn').addEventListener('click', function()
 // Google inloggen
 document.getElementById('login-google-btn').addEventListener('click', async function(){
   clearLoginMessages();
-  try { await signInWithRedirect(auth, provider); }
+  try { await signInWithPopup(auth, provider); }
   catch(e) { showLoginError('Inloggen mislukt: '+e.message); }
 });
 
 // Google registreren
 document.getElementById('register-google-btn').addEventListener('click', async function(){
   clearLoginMessages();
-  try { await signInWithRedirect(auth, provider); }
+  try { await signInWithPopup(auth, provider); }
   catch(e) { showLoginError('Registreren mislukt: '+e.message); }
 });
 
