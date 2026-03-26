@@ -285,40 +285,36 @@
 </div>
 
 <!-- LOGIN SCHERM -->
-<div id="login-screen" style="display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;z-index:998;padding:2rem;overflow-y:auto;">
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;z-index:998;padding:2rem;">
   <div style="font-family:'DM Mono',monospace;font-size:22px;color:var(--accent);margin-bottom:4px;letter-spacing:.08em;">DT1 Tracker</div>
   <div style="font-size:13px;color:var(--muted);margin-bottom:2rem;text-align:center;">Jouw persoonlijke diabetes & voeding tracker</div>
-
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;width:100%;max-width:380px;">
 
     <!-- TABS -->
     <div style="display:flex;gap:4px;margin-bottom:1.5rem;background:var(--bg3);border-radius:var(--radius-sm);padding:4px;">
-      <button id="login-tab-btn" style="flex:1;padding:7px;border:none;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;background:var(--accent);color:#fff;transition:all .15s;">Inloggen</button>
-      <button id="register-tab-btn" style="flex:1;padding:7px;border:none;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;background:none;color:var(--muted);transition:all .15s;">Registreren</button>
+      <button id="login-tab-btn" style="flex:1;padding:7px;border:none;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;background:var(--accent);color:#fff;">Inloggen</button>
+      <button id="register-tab-btn" style="flex:1;padding:7px;border:none;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;background:none;color:var(--muted);">Registreren</button>
     </div>
 
-    <!-- INLOGGEN PANEL -->
+    <!-- INLOGGEN -->
     <div id="login-panel">
-      <!-- Google (voorkeur) -->
       <button class="btn btn-primary" id="login-google-btn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;margin-bottom:1rem;">
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.7 13 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-9.9 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7L2.5 13.3A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.6l8.3-5.9z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.1 0-11.3-3.5-13.2-8.7l-8.3 5.9C6.9 42.6 14.8 48 24 48z"/></svg>
         Inloggen met Google
-        <span style="font-size:10px;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;margin-left:2px;">Aanbevolen</span>
+        <span style="font-size:10px;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;">Aanbevolen</span>
       </button>
-
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
         <div style="flex:1;height:1px;background:var(--border);"></div>
         <div style="font-size:12px;color:var(--muted);">of met e-mail</div>
         <div style="flex:1;height:1px;background:var(--border);"></div>
       </div>
-
       <div class="form-group" style="margin-bottom:.75rem;">
         <label>E-mailadres</label>
-        <input type="email" id="login-email" placeholder="jouw@email.nl" autocomplete="email">
+        <input type="email" id="login-email" placeholder="jouw@email.nl">
       </div>
-      <div class="form-group" style="margin-bottom:.25rem;">
+      <div class="form-group" style="margin-bottom:.5rem;">
         <label>Wachtwoord</label>
-        <input type="password" id="login-password" placeholder="Jouw wachtwoord" autocomplete="current-password">
+        <input type="password" id="login-password" placeholder="Jouw wachtwoord">
       </div>
       <div style="text-align:right;margin-bottom:1rem;">
         <button id="forgot-password-btn" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif;">Wachtwoord vergeten?</button>
@@ -326,35 +322,33 @@
       <button class="btn btn-secondary" id="login-email-btn" style="width:100%;padding:11px;">Inloggen met e-mail</button>
     </div>
 
-    <!-- REGISTREREN PANEL -->
+    <!-- REGISTREREN -->
     <div id="register-panel" style="display:none;">
       <button class="btn btn-primary" id="register-google-btn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;margin-bottom:1rem;">
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.7 13 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-9.9 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7L2.5 13.3A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.6l8.3-5.9z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.1 0-11.3-3.5-13.2-8.7l-8.3 5.9C6.9 42.6 14.8 48 24 48z"/></svg>
         Registreren met Google
-        <span style="font-size:10px;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;margin-left:2px;">Aanbevolen</span>
+        <span style="font-size:10px;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;">Aanbevolen</span>
       </button>
-
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
         <div style="flex:1;height:1px;background:var(--border);"></div>
         <div style="font-size:12px;color:var(--muted);">of met e-mail</div>
         <div style="flex:1;height:1px;background:var(--border);"></div>
       </div>
-
       <div class="form-group" style="margin-bottom:.75rem;">
         <label>Naam</label>
-        <input type="text" id="register-name" placeholder="Jouw naam" autocomplete="name">
+        <input type="text" id="register-name" placeholder="Jouw naam">
       </div>
       <div class="form-group" style="margin-bottom:.75rem;">
         <label>E-mailadres</label>
-        <input type="email" id="register-email" placeholder="jouw@email.nl" autocomplete="email">
+        <input type="email" id="register-email" placeholder="jouw@email.nl">
       </div>
       <div class="form-group" style="margin-bottom:.75rem;">
         <label>Wachtwoord <span style="color:var(--muted);font-size:10px;">min. 6 tekens</span></label>
-        <input type="password" id="register-password" placeholder="Kies een wachtwoord" autocomplete="new-password">
+        <input type="password" id="register-password" placeholder="Kies een wachtwoord">
       </div>
       <div class="form-group" style="margin-bottom:1rem;">
         <label>Wachtwoord herhalen</label>
-        <input type="password" id="register-password2" placeholder="Herhaal wachtwoord" autocomplete="new-password">
+        <input type="password" id="register-password2" placeholder="Herhaal wachtwoord">
       </div>
       <button class="btn btn-secondary" id="register-email-btn" style="width:100%;padding:11px;">Account aanmaken</button>
     </div>
