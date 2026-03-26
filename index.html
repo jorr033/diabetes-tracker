@@ -285,17 +285,82 @@
 </div>
 
 <!-- LOGIN SCHERM -->
-<div id="login-screen" style="display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;z-index:998;padding:2rem;">
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;z-index:998;padding:2rem;overflow-y:auto;">
   <div style="font-family:'DM Mono',monospace;font-size:22px;color:var(--accent);margin-bottom:4px;letter-spacing:.08em;">DT1 Tracker</div>
   <div style="font-size:13px;color:var(--muted);margin-bottom:2rem;text-align:center;">Jouw persoonlijke diabetes & voeding tracker</div>
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;width:100%;max-width:360px;text-align:center;">
-    <div style="font-size:16px;font-weight:500;margin-bottom:.5rem;">Welkom terug</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:1.5rem;">Log in met je Google account om door te gaan</div>
-    <button class="btn btn-primary" id="login-google-btn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;">
-      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.7 13 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-9.9 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7L2.5 13.3A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.6l8.3-5.9z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.1 0-11.3-3.5-13.2-8.7l-8.3 5.9C6.9 42.6 14.8 48 24 48z"/></svg>
-      Inloggen met Google
-    </button>
-    <div id="login-error" style="display:none;margin-top:1rem;font-size:12px;color:var(--danger);"></div>
+
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;width:100%;max-width:380px;">
+
+    <!-- TABS -->
+    <div style="display:flex;gap:4px;margin-bottom:1.5rem;background:var(--bg3);border-radius:var(--radius-sm);padding:4px;">
+      <button id="login-tab-btn" style="flex:1;padding:7px;border:none;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;background:var(--accent);color:#fff;transition:all .15s;">Inloggen</button>
+      <button id="register-tab-btn" style="flex:1;padding:7px;border:none;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;background:none;color:var(--muted);transition:all .15s;">Registreren</button>
+    </div>
+
+    <!-- INLOGGEN PANEL -->
+    <div id="login-panel">
+      <!-- Google (voorkeur) -->
+      <button class="btn btn-primary" id="login-google-btn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;margin-bottom:1rem;">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.7 13 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-9.9 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7L2.5 13.3A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.6l8.3-5.9z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.1 0-11.3-3.5-13.2-8.7l-8.3 5.9C6.9 42.6 14.8 48 24 48z"/></svg>
+        Inloggen met Google
+        <span style="font-size:10px;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;margin-left:2px;">Aanbevolen</span>
+      </button>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <div style="font-size:12px;color:var(--muted);">of met e-mail</div>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:.75rem;">
+        <label>E-mailadres</label>
+        <input type="email" id="login-email" placeholder="jouw@email.nl" autocomplete="email">
+      </div>
+      <div class="form-group" style="margin-bottom:.25rem;">
+        <label>Wachtwoord</label>
+        <input type="password" id="login-password" placeholder="Jouw wachtwoord" autocomplete="current-password">
+      </div>
+      <div style="text-align:right;margin-bottom:1rem;">
+        <button id="forgot-password-btn" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif;">Wachtwoord vergeten?</button>
+      </div>
+      <button class="btn btn-secondary" id="login-email-btn" style="width:100%;padding:11px;">Inloggen met e-mail</button>
+    </div>
+
+    <!-- REGISTREREN PANEL -->
+    <div id="register-panel" style="display:none;">
+      <button class="btn btn-primary" id="register-google-btn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;margin-bottom:1rem;">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.7 13 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-9.9 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7L2.5 13.3A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.6l8.3-5.9z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.1 0-11.3-3.5-13.2-8.7l-8.3 5.9C6.9 42.6 14.8 48 24 48z"/></svg>
+        Registreren met Google
+        <span style="font-size:10px;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;margin-left:2px;">Aanbevolen</span>
+      </button>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <div style="font-size:12px;color:var(--muted);">of met e-mail</div>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:.75rem;">
+        <label>Naam</label>
+        <input type="text" id="register-name" placeholder="Jouw naam" autocomplete="name">
+      </div>
+      <div class="form-group" style="margin-bottom:.75rem;">
+        <label>E-mailadres</label>
+        <input type="email" id="register-email" placeholder="jouw@email.nl" autocomplete="email">
+      </div>
+      <div class="form-group" style="margin-bottom:.75rem;">
+        <label>Wachtwoord <span style="color:var(--muted);font-size:10px;">min. 6 tekens</span></label>
+        <input type="password" id="register-password" placeholder="Kies een wachtwoord" autocomplete="new-password">
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Wachtwoord herhalen</label>
+        <input type="password" id="register-password2" placeholder="Herhaal wachtwoord" autocomplete="new-password">
+      </div>
+      <button class="btn btn-secondary" id="register-email-btn" style="width:100%;padding:11px;">Account aanmaken</button>
+    </div>
+
+    <div id="login-error" style="display:none;margin-top:1rem;font-size:12px;color:var(--danger);text-align:center;padding:.5rem;background:rgba(248,113,113,0.1);border-radius:var(--radius-sm);"></div>
+    <div id="login-success" style="display:none;margin-top:1rem;font-size:12px;color:var(--success);text-align:center;padding:.5rem;background:rgba(110,231,183,0.1);border-radius:var(--radius-sm);"></div>
   </div>
 </div>
 
@@ -1013,7 +1078,7 @@
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 // ─── FIREBASE INIT ────────────────────────────────────────
 const firebaseConfig = {
@@ -1248,13 +1313,110 @@ document.getElementById('welcome-close').addEventListener('click', function(){
   document.getElementById('welcome-modal').style.display = 'none';
 });
 
+// ─── LOGIN HANDLERS ───────────────────────────────────────
+function showLoginError(msg) {
+  var el = document.getElementById('login-error');
+  el.textContent = msg; el.style.display = 'block';
+  document.getElementById('login-success').style.display = 'none';
+}
+function showLoginSuccess(msg) {
+  var el = document.getElementById('login-success');
+  el.textContent = msg; el.style.display = 'block';
+  document.getElementById('login-error').style.display = 'none';
+}
+function clearLoginMessages() {
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-success').style.display = 'none';
+}
+
+function getEmailError(code) {
+  if(code === 'auth/user-not-found')       return 'Geen account gevonden met dit e-mailadres.';
+  if(code === 'auth/wrong-password')       return 'Onjuist wachtwoord. Probeer opnieuw of reset je wachtwoord.';
+  if(code === 'auth/invalid-email')        return 'Ongeldig e-mailadres.';
+  if(code === 'auth/email-already-in-use') return 'Dit e-mailadres is al in gebruik.';
+  if(code === 'auth/weak-password')        return 'Wachtwoord is te kort. Gebruik minimaal 6 tekens.';
+  if(code === 'auth/too-many-requests')    return 'Te veel pogingen. Probeer het later opnieuw.';
+  if(code === 'auth/invalid-credential')   return 'Onjuist e-mailadres of wachtwoord.';
+  return 'Er ging iets mis. Probeer het opnieuw.';
+}
+
+// Tab switching
+document.getElementById('login-tab-btn').addEventListener('click', function(){
+  document.getElementById('login-panel').style.display = 'block';
+  document.getElementById('register-panel').style.display = 'none';
+  document.getElementById('login-tab-btn').style.background = 'var(--accent)';
+  document.getElementById('login-tab-btn').style.color = '#fff';
+  document.getElementById('register-tab-btn').style.background = 'none';
+  document.getElementById('register-tab-btn').style.color = 'var(--muted)';
+  clearLoginMessages();
+});
+document.getElementById('register-tab-btn').addEventListener('click', function(){
+  document.getElementById('login-panel').style.display = 'none';
+  document.getElementById('register-panel').style.display = 'block';
+  document.getElementById('register-tab-btn').style.background = 'var(--accent)';
+  document.getElementById('register-tab-btn').style.color = '#fff';
+  document.getElementById('login-tab-btn').style.background = 'none';
+  document.getElementById('login-tab-btn').style.color = 'var(--muted)';
+  clearLoginMessages();
+});
+
+// Google inloggen
 document.getElementById('login-google-btn').addEventListener('click', async function(){
+  clearLoginMessages();
+  try { await signInWithPopup(auth, provider); }
+  catch(e) { showLoginError('Inloggen mislukt: '+e.message); }
+});
+
+// Google registreren
+document.getElementById('register-google-btn').addEventListener('click', async function(){
+  clearLoginMessages();
+  try { await signInWithPopup(auth, provider); }
+  catch(e) { showLoginError('Registreren mislukt: '+e.message); }
+});
+
+// E-mail inloggen
+document.getElementById('login-email-btn').addEventListener('click', async function(){
+  clearLoginMessages();
+  var email = document.getElementById('login-email').value.trim();
+  var pass  = document.getElementById('login-password').value;
+  if(!email || !pass) { showLoginError('Vul je e-mailadres en wachtwoord in.'); return; }
   try {
-    await signInWithPopup(auth, provider);
-  } catch(e) {
-    document.getElementById('login-error').textContent = 'Inloggen mislukt: '+e.message;
-    document.getElementById('login-error').style.display='block';
-  }
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) { showLoginError(getEmailError(e.code)); }
+});
+
+// Enter key op wachtwoordveld
+document.getElementById('login-password').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') document.getElementById('login-email-btn').click();
+});
+
+// E-mail registreren
+document.getElementById('register-email-btn').addEventListener('click', async function(){
+  clearLoginMessages();
+  var naam  = document.getElementById('register-name').value.trim();
+  var email = document.getElementById('register-email').value.trim();
+  var pass  = document.getElementById('register-password').value;
+  var pass2 = document.getElementById('register-password2').value;
+  if(!naam)              { showLoginError('Vul je naam in.'); return; }
+  if(!email)             { showLoginError('Vul je e-mailadres in.'); return; }
+  if(pass.length < 6)    { showLoginError('Wachtwoord moet minimaal 6 tekens zijn.'); return; }
+  if(pass !== pass2)     { showLoginError('Wachtwoorden komen niet overeen.'); return; }
+  try {
+    var cred = await createUserWithEmailAndPassword(auth, email, pass);
+    // Sla naam op in profiel
+    await updateProfile(cred.user, { displayName: naam });
+  } catch(e) { showLoginError(getEmailError(e.code)); }
+});
+
+// Wachtwoord vergeten
+document.getElementById('forgot-password-btn').addEventListener('click', async function(){
+  clearLoginMessages();
+  var email = document.getElementById('login-email').value.trim();
+  if(!email) { showLoginError('Vul eerst je e-mailadres in.'); return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showLoginSuccess('Reset-link verstuurd naar '+email+'. Controleer je inbox.');
+  } catch(e) { showLoginError(getEmailError(e.code)); }
 });
 
 document.getElementById('logout-btn').addEventListener('click', async function(){
