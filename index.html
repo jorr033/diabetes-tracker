@@ -973,7 +973,7 @@ document.addEventListener('click', function(e){
     resultsEl.style.display='none';
 });
 
-// ─── BARCODE SCANNER ──────────────────────────────────────
+// ─── BARCODE SCANNER (ZXing - werkt op alle browsers) ─────
 document.getElementById('scan-btn').addEventListener('click', async function(){
   scannerWrap.style.display = 'block';
   scanStatus.textContent = 'Camera starten...';
@@ -992,43 +992,88 @@ document.getElementById('scan-stop').addEventListener('click', stopScanner);
 
 function stopScanner() {
   if(scanStream) { scanStream.getTracks().forEach(function(t){ t.stop(); }); scanStream=null; }
-  clearInterval(scanTimer);
+  if(scanTimer) { clearInterval(scanTimer); scanTimer=null; }
   scannerWrap.style.display = 'none';
 }
 
 function startBarcodeDetection() {
-  if(!('BarcodeDetector' in window)){
-    // Fallback: toon instructie om handmatig te typen
-    scanStatus.innerHTML = 'Barcode detectie niet beschikbaar in deze browser.<br>Typ de barcode handmatig in het zoekvak.';
-    return;
-  }
-  var detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','code_128','code_39'] });
-  var canvas = document.createElement('canvas');
-  var ctx = canvas.getContext('2d');
+  // Laad ZXing dynamisch
+  if(window.ZXing) { runZXing(); return; }
+  var script = document.createElement('script');
+  script.src = 'https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js';
+  script.onload = runZXing;
+  script.onerror = function(){
+    scanStatus.textContent = 'Library laden mislukt. Controleer je internetverbinding.';
+  };
+  document.head.appendChild(script);
+}
 
-  scanTimer = setInterval(async function(){
-    if(!scanVideo.videoWidth) return;
-    canvas.width  = scanVideo.videoWidth;
-    canvas.height = scanVideo.videoHeight;
-    ctx.drawImage(scanVideo, 0, 0);
-    try {
-      var barcodes = await detector.detect(canvas);
-      if(barcodes.length > 0){
-        var code = barcodes[0].rawValue;
-        scanStatus.textContent = 'Barcode gevonden: '+code+' — ophalen...';
-        clearInterval(scanTimer);
-        var food = await offBarcode(code);
-        if(food){
-          addIngredient(food);
-          stopScanner();
-          showAlert('meal-alert', '"'+food.n+'" toegevoegd!', 'success');
+function runZXing() {
+  try {
+    var hints = new Map();
+    var formats = [
+      ZXing.BarcodeFormat.EAN_13,
+      ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.UPC_A,
+      ZXing.BarcodeFormat.UPC_E,
+      ZXing.BarcodeFormat.CODE_128,
+      ZXing.BarcodeFormat.CODE_39
+    ];
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+    var reader = new ZXing.MultiFormatReader();
+    reader.setHints(hints);
+
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    var lastCode = null;
+    var sameCount = 0;
+
+    scanStatus.textContent = 'Richt op barcode...';
+
+    scanTimer = setInterval(function(){
+      if(!scanVideo.videoWidth || scanVideo.paused) return;
+      canvas.width  = scanVideo.videoWidth;
+      canvas.height = scanVideo.videoHeight;
+      ctx.drawImage(scanVideo, 0, 0);
+
+      try {
+        var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        var luminance = new ZXing.RGBLuminanceSource(imgData.data, canvas.width, canvas.height);
+        var binary = new ZXing.HybridBinarizer(luminance);
+        var bitmap = new ZXing.BinaryBitmap(binary);
+        var result = reader.decode(bitmap);
+        var code = result.getText();
+
+        // Zelfde code 2x gezien = betrouwbaar
+        if(code === lastCode) {
+          sameCount++;
+          if(sameCount >= 2) {
+            clearInterval(scanTimer);
+            scanStatus.textContent = 'Barcode: '+code+' — ophalen...';
+            offBarcode(code).then(function(food){
+              if(food && food.cal > 0){
+                addIngredient(food);
+                stopScanner();
+                showAlert('meal-alert', '"'+food.n+'" toegevoegd!', 'success');
+              } else {
+                scanStatus.innerHTML = 'Product ('+code+') niet gevonden.<br>Probeer op naam te zoeken.';
+                lastCode = null; sameCount = 0;
+                scanTimer = setInterval(arguments.callee, 300);
+              }
+            });
+          }
         } else {
-          scanStatus.innerHTML = 'Product niet gevonden in database.<br>Typ de naam handmatig in het zoekvak.';
-          setTimeout(startBarcodeDetection, 2000);
+          lastCode = code;
+          sameCount = 1;
         }
+      } catch(e) {
+        // Geen barcode gevonden in dit frame — normaal
       }
-    } catch(e) {}
-  }, 500);
+    }, 300);
+
+  } catch(e) {
+    scanStatus.textContent = 'Fout bij starten scanner: '+e.message;
+  }
 }
 
 // ─── HANDMATIG TOEVOEGEN ──────────────────────────────────
