@@ -268,6 +268,7 @@
     <button class="nav-tab" data-page="dashboard">Dashboard</button>
     <button class="nav-tab" data-page="logboek">Logboek</button>
     <button class="nav-tab" data-page="instellingen">Instellingen</button>
+    <button class="nav-tab" data-page="info">Info & FAQ</button>
   </div>
   <div style="display:flex;align-items:center;gap:10px;">
     <div id="sync-status" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">● laden...</div>
@@ -315,6 +316,16 @@
 
 <!-- PAGE: INVOER -->
 <div class="page active" id="page-invoer">
+
+  <!-- TIP BANNER -->
+  <div id="tip-banner" style="display:none;background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);border-radius:var(--radius-sm);padding:.75rem 1rem;margin-bottom:1rem;display:flex;align-items:flex-start;gap:10px;">
+    <div style="font-size:18px;flex-shrink:0;">💡</div>
+    <div style="flex:1;">
+      <div style="font-size:12px;font-weight:500;color:var(--accent);margin-bottom:2px;">TIP</div>
+      <div style="font-size:13px;color:var(--muted);" id="tip-text"></div>
+    </div>
+    <button id="tip-close" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0;line-height:1;">✕</button>
+  </div>
 
   <div id="meal-reminder" class="notif-banner" style="display:none;">
     <div class="notif-dot"></div>
@@ -760,6 +771,109 @@
       <button class="btn btn-danger" id="reset-btn">Alle data wissen</button>
     </div>
   </div>
+<!-- PAGE: INFO & FAQ -->
+<div class="page" id="page-info">
+
+  <div class="section-header">
+    <div class="section-title">Info & FAQ</div>
+    <div style="font-size:11px;color:var(--muted);">Laatst bijgewerkt: maart 2026</div>
+  </div>
+
+  <!-- OVER DE APP -->
+  <div class="card">
+    <div class="card-title">Over DT1 Tracker</div>
+    <p style="font-size:14px;line-height:1.7;color:var(--muted);margin-bottom:.75rem;">
+      DT1 Tracker is een persoonlijke gezondheidsapp speciaal ontwikkeld voor mensen met diabetes type 1. De app helpt je inzicht te krijgen in je voedingspatroon, bloedsuikerwaarden, insulinegebruik en beweging — allemaal op één plek.
+    </p>
+    <p style="font-size:14px;line-height:1.7;color:var(--muted);">
+      Door consistent bij te houden wat je eet en drinkt, bouw je waardevolle data op die je samen met je zorgverlener kunt gebruiken om je diabetes management te verbeteren.
+    </p>
+  </div>
+
+  <!-- FAQ -->
+  <div class="section-title" style="margin-bottom:1rem;margin-top:1.5rem;">Veelgestelde vragen</div>
+
+  <div id="faq-list"></div>
+
+  <!-- GEGEVENS & PRIVACY -->
+  <div class="section-title" style="margin-bottom:1rem;margin-top:1.5rem;">Jouw gegevens & privacy</div>
+
+  <div class="card">
+    <div class="card-title">Wat bewaren we?</div>
+    <p style="font-size:14px;line-height:1.7;color:var(--muted);margin-bottom:.75rem;">
+      DT1 Tracker slaat de volgende gegevens op in jouw persoonlijke account:
+    </p>
+    <ul style="font-size:14px;line-height:1.9;color:var(--muted);padding-left:1.25rem;">
+      <li>Maaltijden en voedingswaarden die je invoert</li>
+      <li>Bloedsuikermetingen en insuline-eenheden</li>
+      <li>Bewegings- en sportgegevens</li>
+      <li>Vochtinname</li>
+      <li>Jouw persoonlijke doelen en instellingen</li>
+      <li>Favoriete maaltijden en eigen producten</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Hoe zijn jouw gegevens beveiligd?</div>
+    <p style="font-size:14px;line-height:1.7;color:var(--muted);margin-bottom:.75rem;">
+      Jouw gegevens worden opgeslagen in <strong style="color:var(--text);">Google Firebase</strong> — een beveiligd cloudplatform van Google. Dit betekent:
+    </p>
+    <ul style="font-size:14px;line-height:1.9;color:var(--muted);padding-left:1.25rem;">
+      <li>Alle data is versleuteld tijdens overdracht (HTTPS/TLS)</li>
+      <li>Alle data is versleuteld opgeslagen in de cloud</li>
+      <li>Alleen jij kunt jouw eigen data lezen en schrijven — inloggen via Google is verplicht</li>
+      <li>De app deelt jouw gegevens <strong style="color:var(--text);">niet</strong> met derden</li>
+      <li>Jouw gegevens worden <strong style="color:var(--text);">niet</strong> gebruikt voor advertenties of commerciële doeleinden</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Wie heeft toegang tot mijn data?</div>
+    <p style="font-size:14px;line-height:1.7;color:var(--muted);">
+      Uitsluitend jijzelf hebt toegang tot jouw data via jouw Google-account. De app-beheerder heeft technisch gezien beheerderstoegang tot de Firebase-omgeving voor onderhoud en ondersteuning, maar bekijkt jouw persoonlijke gegevens niet zonder jouw toestemming.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Hoe lang bewaren we jouw data?</div>
+    <p style="font-size:14px;line-height:1.7;color:var(--muted);">
+      Jouw data wordt bewaard zolang je een actief account hebt. Verwijderde entries verdwijnen eerst naar de prullenbak en worden na 7 dagen definitief verwijderd. Je kunt op elk moment al je data exporteren of permanent verwijderen via Instellingen → Data.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Inloggen via Google</div>
+    <p style="font-size:14px;line-height:1.7;color:var(--muted);">
+      De app gebruikt Google Sign-In voor authenticatie. Hierdoor hoef je geen apart wachtwoord aan te maken. DT1 Tracker heeft alleen toegang tot je naam en e-mailadres — niet tot je Google-account zelf of andere Google-diensten.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Open Food Facts</div>
+    <p style="font-size:14px;line-height:1.7;color:var(--muted);">
+      Voor het opzoeken van voedingswaarden maakt DT1 Tracker gebruik van <strong style="color:var(--text);">Open Food Facts</strong> — een open, gratis voedingsdatabase met meer dan 3 miljoen producten. Bij het zoeken wordt jouw zoekopdracht naar Open Food Facts gestuurd. Er worden geen persoonsgegevens meegestuurd. Meer info: <span style="color:var(--accent);">world.openfoodfacts.org</span>
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Medische disclaimer</div>
+    <div class="alert alert-info" style="margin:0;">
+      DT1 Tracker is een persoonlijk bijhoudtool en vervangt geen medisch advies. Raadpleeg altijd je arts, diabetesverpleegkundige of diëtist voor medische beslissingen. De informatie in de app is bedoeld als ondersteuning bij zelfmanagement, niet als diagnose of behandeling.
+    </div>
+  </div>
+
+  <!-- VERSIE INFO -->
+  <div class="section-title" style="margin-bottom:1rem;margin-top:1.5rem;">Versie & updates</div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-size:14px;font-weight:500;">DT1 Tracker</div>
+        <div style="font-size:12px;color:var(--muted);">Versie 1.0 · Laatste review: maart 2026</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);text-align:right;">Volgende geplande review: april 2026</div>
+    </div>
+  </div>
+
 </div>
 
 </div> <!-- einde app-content -->
@@ -2837,8 +2951,154 @@ document.getElementById('reset-btn').addEventListener('click', async function(){
   }
 });
 
+// ─── TIP SYSTEEM ──────────────────────────────────────────
+var TIPS = [
+  'Gebruik de barcode scanner om snel een product toe te voegen — richt je camera op de verpakking.',
+  'Sla je favoriete maaltijden op via ☆ Favoriet. Ze verschijnen dan direct als je op het zoekvak klikt.',
+  'Je kunt invoer met terugwerkende kracht doen door het datumveld per sectie in te vullen.',
+  'In het dashboard kun je filteren op "Vandaag", "Deze week" of een aangepast datumbereik.',
+  'Vergeet niet je vochtinname bij te houden — koffie, thee en water tellen allemaal mee.',
+  'Exporteer je data wekelijks als Excel-bestand om te delen met je zorgverlener.',
+  'Typ meerdere woorden tegelijk in het zoekvak, zoals "Alpro haver" voor betere resultaten.',
+  'Stel je dagelijkse doelen in via het dashboard — zo zie je direct hoe dicht je bij je doel zit.',
+  'Verwijderde entries staan 7 dagen in de prullenbak. Ga naar Logboek → 🗑 Prullenbak om ze te herstellen.',
+  'Voeg de app toe aan je homescreen: op iPhone via Safari → Deel → Zet op beginscherm.',
+  'Je bloedsuiker bij "Voor maaltijd" en "Na maaltijd" invullen geeft het beste inzicht in je glucoserespons.',
+  'Bij sport kun je de verbrandde calorieën optioneel invullen — handig voor je totaaloverzicht.',
+  'Je kunt zelf producten toevoegen aan de database via "+ zelf toevoegen" onderaan de zoekresultaten.',
+  'Wil je data van meerdere dagen vergelijken? Gebruik "Aangepast" in het dashboard met een eigen datumrange.',
+];
+
+function showTip() {
+  // Toon een tip max 1x per dag, willekeurig gekozen
+  var lastTip = null;
+  try { lastTip = localStorage.getItem('dt1_last_tip_date'); } catch(e){}
+  var today = new Date().toDateString();
+  if(lastTip === today) return; // al een tip gehad vandaag
+
+  var seen = [];
+  try { seen = JSON.parse(localStorage.getItem('dt1_seen_tips')||'[]'); } catch(e){}
+
+  // Kies een tip die nog niet gezien is
+  var unseen = TIPS.filter(function(t,i){ return seen.indexOf(i) < 0; });
+  if(!unseen.length){
+    // Alles gezien, reset
+    seen = [];
+    unseen = TIPS.slice();
+  }
+
+  var idx = Math.floor(Math.random() * unseen.length);
+  var tipIdx = TIPS.indexOf(unseen[idx]);
+  var tipText = TIPS[tipIdx];
+
+  var banner = document.getElementById('tip-banner');
+  var tipEl = document.getElementById('tip-text');
+  if(!banner || !tipEl) return;
+
+  tipEl.textContent = tipText;
+  banner.style.display = 'flex';
+
+  // Bewaar dat deze tip gezien is
+  seen.push(tipIdx);
+  try {
+    localStorage.setItem('dt1_seen_tips', JSON.stringify(seen));
+    localStorage.setItem('dt1_last_tip_date', today);
+  } catch(e){}
+}
+
+document.getElementById('tip-close').addEventListener('click', function(){
+  document.getElementById('tip-banner').style.display = 'none';
+});
+
+// ─── FAQ ──────────────────────────────────────────────────
+var FAQ_ITEMS = [
+  {
+    q: 'Hoe voeg ik een maaltijd toe?',
+    a: 'Ga naar de Invoer-pagina en zoek via de zoekbalk naar een ingrediënt of product. Je kunt meerdere ingrediënten combineren. Niet gevonden? Gebruik "+ zelf toevoegen" onderaan de zoekresultaten.'
+  },
+  {
+    q: 'Kan ik invoer met terugwerkende kracht doen?',
+    a: 'Ja! Elke sectie (drinken, maaltijd, sport, suiker, insuline) heeft een optioneel datumveld. Vul een datum in het verleden in om de invoer op dat moment te registreren.'
+  },
+  {
+    q: 'Hoe werkt de barcode scanner?',
+    a: 'Klik op het 📷-icoontje naast het zoekvak. Richt je camera op de barcode van een product. De app zoekt automatisch de voedingswaarden op via Open Food Facts. Werkt het niet? Zoek dan op productnaam.'
+  },
+  {
+    q: 'Wat zijn favorieten en hoe gebruik ik ze?',
+    a: 'Na het samenstellen van een maaltijd klik je op "☆ Favoriet" om die maaltijd op te slaan. De volgende keer klik je op het zoekvak en zie je je favorieten direct bovenaan — gesorteerd op hoe vaak je ze gebruikt.'
+  },
+  {
+    q: 'Hoe stel ik mijn dagelijkse doelen in?',
+    a: 'Op de Dashboard-pagina is een uitklapbaar paneel "Doelen instellen". Hier kun je calorieën, eiwit, koolhydraten, vetten en vochtdoel aanpassen. Je ziet direct in de grafieken hoe je scoort ten opzichte van je doel.'
+  },
+  {
+    q: 'Hoe exporteer ik mijn data?',
+    a: 'Ga naar het Dashboard en scroll naar "Exporteren". Kies Excel, CSV, JSON of PDF. De export bevat de data van de geselecteerde periode en eventuele filters die je hebt ingesteld.'
+  },
+  {
+    q: 'Ik heb per ongeluk een entry verwijderd. Kan ik die terughalen?',
+    a: 'Ja! Verwijderde entries staan 7 dagen in de prullenbak. Ga naar Logboek → "🗑 Prullenbak" en klik op "Herstellen" naast de entry die je terug wilt hebben.'
+  },
+  {
+    q: 'Werkt de app op mijn telefoon?',
+    a: 'Ja, de app werkt in elke moderne browser op telefoon, tablet en computer. Voor de beste ervaring voeg je de app toe aan je homescreen: op iPhone via Safari → Deel → Zet op beginscherm. Op Android via Chrome → menu → Toevoegen aan startscherm.'
+  },
+  {
+    q: 'Wordt mijn data gesynchroniseerd tussen apparaten?',
+    a: 'Ja, alle data wordt opgeslagen in de cloud via Firebase. Zodra je inlogt op een ander apparaat met hetzelfde Google-account zie je automatisch al je data terug.'
+  },
+  {
+    q: 'Kan mijn zorgverlener mijn data inzien?',
+    a: 'Niet automatisch. Jij beheert je eigen data. Je kunt een export maken (Excel, PDF of CSV) en die delen met je arts of diabetesverpleegkundige. Een directe koppeling met zorgsystemen is op dit moment niet beschikbaar.'
+  },
+  {
+    q: 'Wat gebeurt er als ik de app verwijder of uitlog?',
+    a: 'Je data blijft bewaard in de cloud zolang je account actief is. Je kunt altijd opnieuw inloggen om je data terug te zien. Wil je alles permanent verwijderen? Ga naar Instellingen → Data → Alle data wissen.'
+  },
+  {
+    q: 'Is de app gratis?',
+    a: 'Ja, DT1 Tracker is volledig gratis te gebruiken. Er zijn geen abonnementskosten, advertenties of verborgen kosten.'
+  },
+  {
+    q: 'Welke browser werkt het best?',
+    a: 'De app werkt het best in Chrome (inclusief op Android) en Safari (op iPhone). Firefox en Edge werken ook. De barcode-scanner werkt in alle moderne browsers.'
+  },
+  {
+    q: 'Hoe verwijder ik mijn account en alle data?',
+    a: 'Ga naar Instellingen → Data → Alle data wissen. Dit verplaatst al je entries naar de prullenbak voor 7 dagen. Voor definitieve verwijdering van je account kun je contact opnemen via de instellingenpagina.'
+  },
+];
+
+function renderFAQ() {
+  var el = document.getElementById('faq-list');
+  if(!el) return;
+  el.innerHTML = FAQ_ITEMS.map(function(item, i){
+    return '<div class="card" style="margin-bottom:.5rem;cursor:pointer;" id="faq-'+i+'">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;" class="faq-toggle" data-i="'+i+'">' +
+        '<div style="font-size:14px;font-weight:500;padding-right:1rem;">'+item.q+'</div>' +
+        '<div style="font-size:12px;color:var(--muted);flex-shrink:0;" id="faq-chevron-'+i+'">▼</div>' +
+      '</div>' +
+      '<div id="faq-answer-'+i+'" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);font-size:14px;line-height:1.7;color:var(--muted);">'+item.a+'</div>' +
+    '</div>';
+  }).join('');
+
+  document.querySelectorAll('.faq-toggle').forEach(function(toggle){
+    toggle.addEventListener('click', function(){
+      var i = toggle.dataset.i;
+      var answer = document.getElementById('faq-answer-'+i);
+      var chevron = document.getElementById('faq-chevron-'+i);
+      var open = answer.style.display !== 'none';
+      answer.style.display = open ? 'none' : 'block';
+      chevron.textContent = open ? '▼' : '▲';
+    });
+  });
+}
+
 // init
 renderDashboard();
+renderFAQ();
+setTimeout(showTip, 1500);
 </script>
 </body>
 </html>
