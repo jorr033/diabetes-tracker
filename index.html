@@ -966,6 +966,46 @@
     <div style="font-size:12px;color:var(--muted);">📅 Volgende geplande review: april 2026</div>
   </div>
 
+  <!-- FEEDBACK -->
+  <div class="section-title" style="margin-bottom:1rem;margin-top:1.5rem;">Feedback & suggesties</div>
+
+  <div class="card">
+    <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:1rem;">
+      Heb je een vraag, fout gevonden of idee voor een nieuwe functie? Laat het ons weten via het formulier hieronder.
+    </p>
+    <div class="form-group" style="margin-bottom:.75rem;">
+      <label>Type</label>
+      <select id="feedback-type">
+        <option value="feedback">Algemene feedback</option>
+        <option value="bug">Bug melden</option>
+        <option value="feature">Functie voorstellen</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:.75rem;">
+      <label>Jouw bericht</label>
+      <textarea id="feedback-msg" placeholder="Beschrijf je feedback, bug of idee..." style="min-height:100px;"></textarea>
+    </div>
+    <div id="feedback-alert" style="display:none;margin-bottom:.75rem;"></div>
+    <button class="btn btn-primary" id="feedback-send" style="width:100%;">Verstuur feedback</button>
+  </div>
+
+  <!-- ADMIN: FEEDBACK OVERZICHT -->
+  <div id="admin-feedback-section" style="display:none;">
+    <div class="section-header" style="margin-top:1.5rem;">
+      <div class="section-title">Ontvangen feedback <span id="feedback-count" style="font-size:13px;color:var(--muted);font-weight:400;"></span></div>
+      <div style="display:flex;gap:8px;">
+        <select id="feedback-filter" style="font-size:12px;padding:4px 8px;">
+          <option value="all">Alle types</option>
+          <option value="feedback">Algemene feedback</option>
+          <option value="bug">Bugs</option>
+          <option value="feature">Functie voorstellen</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" id="feedback-refresh">↻ Vernieuwen</button>
+      </div>
+    </div>
+    <div id="feedback-list"></div>
+  </div>
+
 </div>
 
 </div> <!-- einde app-content -->
@@ -1258,6 +1298,7 @@ onAuthStateChanged(auth, async function(user) {
     renderReminders();
     renderDashboard();
     renderFAQ();
+    initFeedbackAdmin();
     setTimeout(function(){ showWelcomeModal(user); }, 300);
     setTimeout(showTip, 2000);
 
@@ -3189,6 +3230,138 @@ function renderFAQ() {
   });
 }
 
+// ─── FEEDBACK ─────────────────────────────────────────────
+async function saveFeedback(type, msg) {
+  try {
+    await addDoc(collection(db, 'feedback'), {
+      type: type,
+      msg: msg,
+      ts: new Date().toISOString(),
+      uid: USER_ID,
+      naam: currentUser ? (currentUser.displayName||currentUser.email||'Onbekend') : 'Onbekend',
+      gelezen: false
+    });
+    return true;
+  } catch(e) { console.error('Feedback opslaan mislukt:', e); return false; }
+}
+
+async function loadFeedback(filterType) {
+  try {
+    var q = query(collection(db, 'feedback'), orderBy('ts', 'desc'));
+    var snap = await getDocs(q);
+    var items = [];
+    snap.forEach(function(d){ items.push(Object.assign({ id: d.id }, d.data())); });
+    if(filterType && filterType !== 'all') {
+      items = items.filter(function(i){ return i.type === filterType; });
+    }
+    return items;
+  } catch(e) { return []; }
+}
+
+async function markFeedbackRead(id) {
+  try {
+    await setDoc(doc(db, 'feedback', id), { gelezen: true }, { merge: true });
+  } catch(e) {}
+}
+
+function renderFeedbackList(items) {
+  var el = document.getElementById('feedback-list');
+  if(!items.length) {
+    el.innerHTML = '<div class="empty">Geen feedback gevonden.</div>';
+    return;
+  }
+  var typeLabels = { feedback: '💬 Algemeen', bug: '🐛 Bug', feature: '✨ Functie' };
+  var typeColors = { feedback: 'var(--accent)', bug: 'var(--danger)', feature: 'var(--success)' };
+  el.innerHTML = items.map(function(item){
+    return '<div class="log-entry" style="border-left:3px solid '+(typeColors[item.type]||'var(--accent)')+';">' +
+      '<div style="flex:1;">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">' +
+          '<span style="font-size:11px;font-weight:500;color:'+(typeColors[item.type]||'var(--accent)')+';">'+(typeLabels[item.type]||item.type)+'</span>' +
+          '<span style="font-size:11px;color:var(--muted);">van '+item.naam+'</span>' +
+          (!item.gelezen ? '<span style="font-size:10px;background:rgba(79,142,247,0.2);color:var(--accent);padding:1px 7px;border-radius:999px;">Nieuw</span>' : '') +
+        '</div>' +
+        '<div style="font-size:14px;line-height:1.6;">'+item.msg+'</div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">' +
+        '<div class="time-badge">'+displayTs(item.ts)+'</div>' +
+        (!item.gelezen ? '<button class="btn btn-secondary btn-sm mark-read-btn" data-id="'+item.id+'">✓ Gelezen</button>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  el.querySelectorAll('.mark-read-btn').forEach(function(btn){
+    btn.addEventListener('click', async function(){
+      await markFeedbackRead(btn.dataset.id);
+      await refreshFeedbackAdmin();
+    });
+  });
+
+  // Update count
+  var countEl = document.getElementById('feedback-count');
+  if(countEl) {
+    var unread = items.filter(function(i){ return !i.gelezen; }).length;
+    countEl.textContent = '('+items.length+' totaal'+(unread>0?' · '+unread+' nieuw':'')+')';
+  }
+}
+
+async function refreshFeedbackAdmin() {
+  var filter = document.getElementById('feedback-filter') ? document.getElementById('feedback-filter').value : 'all';
+  var items = await loadFeedback(filter);
+  renderFeedbackList(items);
+}
+
+// Feedback versturen
+document.getElementById('feedback-send').addEventListener('click', async function(){
+  var type = document.getElementById('feedback-type').value;
+  var msg  = document.getElementById('feedback-msg').value.trim();
+  var al   = document.getElementById('feedback-alert');
+
+  if(!msg) {
+    al.className='alert alert-danger'; al.textContent='Vul een bericht in.'; al.style.display='block';
+    return;
+  }
+  if(!USER_ID) {
+    al.className='alert alert-danger'; al.textContent='Je moet ingelogd zijn om feedback te sturen.'; al.style.display='block';
+    return;
+  }
+
+  var btn = document.getElementById('feedback-send');
+  btn.disabled = true; btn.textContent = 'Versturen...';
+
+  var ok = await saveFeedback(type, msg);
+  btn.disabled = false; btn.textContent = 'Verstuur feedback';
+
+  if(ok) {
+    al.className='alert alert-success';
+    al.textContent='Bedankt voor je feedback! We nemen dit mee in de verdere ontwikkeling van DT1 Tracker.';
+    al.style.display='block';
+    document.getElementById('feedback-msg').value='';
+  } else {
+    al.className='alert alert-danger';
+    al.textContent='Er ging iets mis. Probeer het opnieuw.';
+    al.style.display='block';
+  }
+});
+
+// Admin filter en refresh
+var feedbackFilterEl = document.getElementById('feedback-filter');
+if(feedbackFilterEl) {
+  feedbackFilterEl.addEventListener('change', refreshFeedbackAdmin);
+}
+var feedbackRefreshEl = document.getElementById('feedback-refresh');
+if(feedbackRefreshEl) {
+  feedbackRefreshEl.addEventListener('click', refreshFeedbackAdmin);
+}
+
+// Toon admin-sectie en laad feedback als admin
+function initFeedbackAdmin() {
+  if(!isAdmin()) return;
+  var section = document.getElementById('admin-feedback-section');
+  if(section) section.style.display = 'block';
+  refreshFeedbackAdmin();
+}
+
+// ─── INIT ─────────────────────────────────────────────────
 // init
 renderDashboard();
 </script>
