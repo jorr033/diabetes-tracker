@@ -311,10 +311,23 @@
         <div class="tab-panel active" id="tab-invoer">
           <!-- Zoekbalk -->
           <div class="form-group" style="margin-bottom:.5rem;">
-            <label>Zoek of typ zelf</label>
+            <label>Zoek of scan product</label>
             <div class="search-wrap">
-              <input type="text" id="food-search" placeholder="bijv. kipfilet, havermout, pasta bolognese..." autocomplete="off">
+              <div style="display:flex;gap:6px;">
+                <input type="text" id="food-search" placeholder="bijv. kipfilet, Brinta, EAN barcode..." autocomplete="off" style="flex:1;">
+                <button class="btn btn-secondary" id="scan-btn" style="flex:0 0 auto;padding:8px 12px;" title="Barcode scannen">📷</button>
+              </div>
               <div class="search-results" id="search-results" style="display:none;"></div>
+            </div>
+          </div>
+
+          <!-- Barcode scanner -->
+          <div id="scanner-wrap" style="display:none;margin-bottom:.75rem;">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Richt je camera op de barcode:</div>
+            <video id="scanner-video" style="width:100%;border-radius:var(--radius-sm);max-height:200px;object-fit:cover;" autoplay playsinline></video>
+            <div style="display:flex;gap:8px;margin-top:6px;">
+              <div id="scan-status" style="flex:1;font-size:12px;color:var(--muted);padding-top:6px;">Zoeken naar barcode...</div>
+              <button class="btn btn-secondary btn-sm" id="scan-stop">Sluiten</button>
             </div>
           </div>
 
@@ -817,32 +830,96 @@ document.querySelectorAll('.tab-btn').forEach(function(btn){
   });
 });
 
-// ─── SEARCH ───────────────────────────────────────────────
-var searchEl  = document.getElementById('food-search');
-var resultsEl = document.getElementById('search-results');
+// ─── OPEN FOOD FACTS + BARCODE ────────────────────────────
+var searchEl    = document.getElementById('food-search');
+var resultsEl   = document.getElementById('search-results');
 var manualPanel = document.getElementById('manual-add-panel');
+var scannerWrap = document.getElementById('scanner-wrap');
+var scanVideo   = document.getElementById('scanner-video');
+var scanStatus  = document.getElementById('scan-status');
+var scanStream  = null;
+var scanTimer   = null;
+var offSearchTimer = null;
 
-searchEl.addEventListener('input', function(){
-  var q = searchEl.value.trim().toLowerCase();
-  manualPanel.style.display = 'none';
-  if(q.length < 1){ resultsEl.style.display='none'; return; }
-
+// Zoek in lokale DB
+function localSearch(q) {
   var all = getAllFoods();
-  var matches = all.filter(function(f){ return f.n.toLowerCase().indexOf(q) >= 0; }).slice(0,10);
+  return all.filter(function(f){ return f.n.toLowerCase().indexOf(q) >= 0; }).slice(0,5);
+}
 
-  var html = matches.map(function(f){
-    var idx = all.indexOf(f);
-    var tag = STATE.customFoods && STATE.customFoods.indexOf(f) >= 0
-      ? '<span style="font-size:10px;background:rgba(79,142,247,0.15);color:var(--accent);padding:1px 6px;border-radius:4px;margin-left:5px;">eigen</span>' : '';
-    return '<div class="search-item" data-fi="'+idx+'">' +
-      '<span class="search-item-name">'+f.n+tag+'</span>' +
-      '<span class="search-item-meta">'+f.cal+' kcal · '+f.prot+'g eiwit</span>' +
-    '</div>';
-  }).join('');
+// Open Food Facts API zoeken op naam
+async function offSearch(q) {
+  try {
+    var url = 'https://world.openfoodfacts.org/cgi/search.pl?search_terms='
+      + encodeURIComponent(q)
+      + '&search_simple=1&action=process&json=1&page_size=6&lc=nl&cc=nl&fields=product_name,nutriments,brands,quantity';
+    var r = await fetch(url);
+    var data = await r.json();
+    if(!data.products) return [];
+    return data.products
+      .filter(function(p){ return p.product_name && p.nutriments; })
+      .map(function(p){
+        var n = p.nutriments;
+        return {
+          n: p.product_name + (p.brands ? ' ('+p.brands+')' : '') + (p.quantity ? ' — '+p.quantity : ''),
+          cal:  Math.round(n['energy-kcal_100g'] || n['energy_100g']/4.184 || 0),
+          prot: Math.round((n['proteins_100g']||0)*10)/10,
+          carb: Math.round((n['carbohydrates_100g']||0)*10)/10,
+          fat:  Math.round((n['fat_100g']||0)*10)/10,
+          unit: 'g', std: 100, off: true
+        };
+      }).filter(function(f){ return f.cal > 0; });
+  } catch(e) { return []; }
+}
 
-  // Always append "Zelf toevoegen" option at bottom
+// Open Food Facts barcode lookup
+async function offBarcode(barcode) {
+  try {
+    var url = 'https://world.openfoodfacts.org/api/v0/product/'+barcode+'.json?fields=product_name,nutriments,brands,quantity';
+    var r = await fetch(url);
+    var data = await r.json();
+    if(data.status !== 1 || !data.product) return null;
+    var p = data.product;
+    var n = p.nutriments || {};
+    return {
+      n: (p.product_name||'Onbekend product') + (p.brands?' ('+p.brands+')':'') + (p.quantity?' — '+p.quantity:''),
+      cal:  Math.round(n['energy-kcal_100g'] || n['energy_100g']/4.184 || 0),
+      prot: Math.round((n['proteins_100g']||0)*10)/10,
+      carb: Math.round((n['carbohydrates_100g']||0)*10)/10,
+      fat:  Math.round((n['fat_100g']||0)*10)/10,
+      unit: 'g', std: 100, off: true
+    };
+  } catch(e) { return null; }
+}
+
+function showResults(local, off, q) {
+  var html = '';
+
+  if(local.length) {
+    html += '<div style="font-size:10px;color:var(--muted);padding:6px 12px 2px;text-transform:uppercase;letter-spacing:.05em;">Mijn database</div>';
+    html += local.map(function(f){
+      var idx = getAllFoods().indexOf(f);
+      var tag = STATE.customFoods && STATE.customFoods.indexOf(f)>=0
+        ? '<span style="font-size:10px;background:rgba(79,142,247,0.15);color:var(--accent);padding:1px 5px;border-radius:4px;margin-left:4px;">eigen</span>' : '';
+      return '<div class="search-item" data-fi="'+idx+'" data-src="local">' +
+        '<span class="search-item-name">'+f.n+tag+'</span>' +
+        '<span class="search-item-meta">'+f.cal+' kcal · '+f.prot+'g eiwit</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  if(off.length) {
+    html += '<div style="font-size:10px;color:var(--muted);padding:6px 12px 2px;text-transform:uppercase;letter-spacing:.05em;">Open Food Facts</div>';
+    html += off.map(function(f, i){
+      return '<div class="search-item" data-fi="'+i+'" data-src="off">' +
+        '<span class="search-item-name">'+f.n+'</span>' +
+        '<span class="search-item-meta">'+f.cal+' kcal · '+f.prot+'g eiwit</span>' +
+      '</div>';
+    }).join('');
+  }
+
   html += '<div class="search-item" id="manual-trigger" style="border-top:1px solid var(--border2);color:var(--accent);">' +
-    '<span class="search-item-name">+ "'+searchEl.value+'" zelf toevoegen</span>' +
+    '<span class="search-item-name">+ "'+q+'" zelf toevoegen</span>' +
     '<span class="search-item-meta">handmatig</span>' +
   '</div>';
 
@@ -858,22 +935,101 @@ searchEl.addEventListener('input', function(){
         searchEl.value = '';
         document.getElementById('manual-cal').focus();
       });
+    } else if(item.dataset.src === 'local') {
+      item.addEventListener('click', function(){
+        var f = getAllFoods()[parseInt(item.dataset.fi)];
+        addIngredient(f);
+        searchEl.value=''; resultsEl.style.display='none';
+      });
     } else {
       item.addEventListener('click', function(){
-        var all2 = getAllFoods();
-        var f = all2[parseInt(item.dataset.fi)];
+        var f = off[parseInt(item.dataset.fi)];
         addIngredient(f);
-        searchEl.value = '';
-        resultsEl.style.display = 'none';
+        searchEl.value=''; resultsEl.style.display='none';
       });
     }
   });
+}
+
+searchEl.addEventListener('input', function(){
+  clearTimeout(offSearchTimer);
+  var q = searchEl.value.trim();
+  manualPanel.style.display = 'none';
+  if(q.length < 2){ resultsEl.style.display='none'; return; }
+
+  // Direct lokale resultaten tonen
+  var local = localSearch(q.toLowerCase());
+  showResults(local, [], q);
+
+  // Na 400ms ook Open Food Facts bevragen
+  offSearchTimer = setTimeout(async function(){
+    var off = await offSearch(q);
+    showResults(local, off, q);
+  }, 400);
 });
 
 document.addEventListener('click', function(e){
-  if(!e.target.closest('.search-wrap') && !e.target.closest('#manual-add-panel'))
+  if(!e.target.closest('.search-wrap') && !e.target.closest('#manual-add-panel') && !e.target.closest('#scanner-wrap'))
     resultsEl.style.display='none';
 });
+
+// ─── BARCODE SCANNER ──────────────────────────────────────
+document.getElementById('scan-btn').addEventListener('click', async function(){
+  scannerWrap.style.display = 'block';
+  scanStatus.textContent = 'Camera starten...';
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    scanVideo.srcObject = scanStream;
+    scanVideo.play();
+    scanStatus.textContent = 'Richt op barcode...';
+    startBarcodeDetection();
+  } catch(e) {
+    scanStatus.textContent = 'Camera toegang geweigerd. Sta camera toe in browserinstellingen.';
+  }
+});
+
+document.getElementById('scan-stop').addEventListener('click', stopScanner);
+
+function stopScanner() {
+  if(scanStream) { scanStream.getTracks().forEach(function(t){ t.stop(); }); scanStream=null; }
+  clearInterval(scanTimer);
+  scannerWrap.style.display = 'none';
+}
+
+function startBarcodeDetection() {
+  if(!('BarcodeDetector' in window)){
+    // Fallback: toon instructie om handmatig te typen
+    scanStatus.innerHTML = 'Barcode detectie niet beschikbaar in deze browser.<br>Typ de barcode handmatig in het zoekvak.';
+    return;
+  }
+  var detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','code_128','code_39'] });
+  var canvas = document.createElement('canvas');
+  var ctx = canvas.getContext('2d');
+
+  scanTimer = setInterval(async function(){
+    if(!scanVideo.videoWidth) return;
+    canvas.width  = scanVideo.videoWidth;
+    canvas.height = scanVideo.videoHeight;
+    ctx.drawImage(scanVideo, 0, 0);
+    try {
+      var barcodes = await detector.detect(canvas);
+      if(barcodes.length > 0){
+        var code = barcodes[0].rawValue;
+        scanStatus.textContent = 'Barcode gevonden: '+code+' — ophalen...';
+        clearInterval(scanTimer);
+        var food = await offBarcode(code);
+        if(food){
+          addIngredient(food);
+          stopScanner();
+          showAlert('meal-alert', '"'+food.n+'" toegevoegd!', 'success');
+        } else {
+          scanStatus.innerHTML = 'Product niet gevonden in database.<br>Typ de naam handmatig in het zoekvak.';
+          setTimeout(startBarcodeDetection, 2000);
+        }
+      }
+    } catch(e) {}
+  }, 500);
+}
 
 // ─── HANDMATIG TOEVOEGEN ──────────────────────────────────
 function getManualFood() {
