@@ -311,211 +311,156 @@
     </div>
   </div>
 
-  <div class="grid2">
-    <!-- MAALTIJD BUILDER -->
-    <div>
-      <div class="section-header">
-        <div class="section-title">Maaltijd</div>
-        <select id="meal-type" style="font-size:12px;padding:4px 8px;max-width:130px;">
-          <option>Ontbijt</option><option>Lunch</option><option>Diner</option>
-          <option>Tussendoor</option><option>Snack</option>
-        </select>
-      </div>
-      <div class="card">
-        <div class="tabs">
-          <button class="tab-btn active" data-tab="invoer">Invoer</button>
-          <button class="tab-btn" data-tab="favorieten">Favorieten</button>
-        </div>
-
-        <!-- TAB: INVOER (zoeken + handmatig gecombineerd) -->
-        <div class="tab-panel active" id="tab-invoer">
-          <!-- Zoekbalk -->
-          <div class="form-group" style="margin-bottom:.5rem;">
-            <label>Zoek of scan product</label>
-            <div class="search-wrap">
-              <div style="display:flex;gap:6px;">
-                <input type="text" id="food-search" placeholder="bijv. kipfilet, Brinta, EAN barcode..." autocomplete="off" style="flex:1;">
-                <button class="btn btn-secondary" id="scan-btn" style="flex:0 0 auto;padding:8px 12px;" title="Barcode scannen">📷</button>
-              </div>
-              <div class="search-results" id="search-results" style="display:none;"></div>
-            </div>
-          </div>
-
-          <!-- Barcode scanner -->
-          <div id="scanner-wrap" style="display:none;margin-bottom:.75rem;">
-            <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Richt je camera op de barcode:</div>
-            <video id="scanner-video" style="width:100%;border-radius:var(--radius-sm);max-height:200px;object-fit:cover;" autoplay playsinline></video>
-            <div style="display:flex;gap:8px;margin-top:6px;">
-              <div id="scan-status" style="flex:1;font-size:12px;color:var(--muted);padding-top:6px;">Zoeken naar barcode...</div>
-              <button class="btn btn-secondary btn-sm" id="scan-stop">Sluiten</button>
-            </div>
-          </div>
-
-          <!-- Ingrediëntenlijst -->
-          <div id="ingredients-list"></div>
-
-          <!-- Handmatig toevoegen panel (verschijnt als niets gevonden) -->
-          <div id="manual-add-panel" style="display:none; background:var(--bg3); border-radius:var(--radius-sm); padding:.875rem; margin:.5rem 0; border:1px dashed var(--border2);">
-            <div style="font-size:12px;color:var(--muted);margin-bottom:.625rem;">Niet gevonden — voeg zelf toe:</div>
-            <div class="form-group" style="margin-bottom:.5rem;">
-              <label>Naam</label>
-              <input type="text" id="manual-name" placeholder="bijv. Mamas stamppot">
-            </div>
-            <div class="form-row" style="margin-bottom:.5rem;">
-              <div class="form-group"><label>Calorieën</label><input type="number" id="manual-cal" placeholder="0" min="0"></div>
-              <div class="form-group"><label>Eiwit (g)</label><input type="number" id="manual-prot" placeholder="0" min="0" step="0.1"></div>
-            </div>
-            <div class="form-row" style="margin-bottom:.75rem;">
-              <div class="form-group"><label>Koolhydraten (g)</label><input type="number" id="manual-carb" placeholder="0" min="0" step="0.1"></div>
-              <div class="form-group"><label>Vetten (g)</label><input type="number" id="manual-fat" placeholder="0" min="0" step="0.1"></div>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button class="btn btn-secondary btn-sm" id="manual-add-once">Alleen toevoegen</button>
-              <button class="btn btn-primary btn-sm" id="manual-add-save">Toevoegen & opslaan in database</button>
-            </div>
-          </div>
-
-          <!-- Maaltijdnaam -->
-          <div class="form-group" style="margin-top:.625rem;">
-            <label>Naam maaltijd</label>
-            <input type="text" id="meal-desc" placeholder="bijv. Ontbijt, Lunch thuis...">
-          </div>
-        </div>
-
-        <!-- TAB: FAVORIETEN -->
-        <div class="tab-panel" id="tab-favorieten">
-          <div id="fav-list"></div>
-          <div class="empty" id="fav-empty" style="display:none;">Nog geen favorieten opgeslagen.<br><span style="font-size:12px;">Gebruik de ☆ knop na het samenstellen van een maaltijd.</span></div>
-        </div>
-
-        <!-- MACRO PREVIEW -->
-        <div class="macro-preview" id="macro-preview">
-          <div class="macro-preview-item"><div class="mv cal" id="prev-cal">0</div><div class="ml">kcal</div></div>
-          <div class="macro-preview-item"><div class="mv prot" id="prev-prot">0</div><div class="ml">eiwit g</div></div>
-          <div class="macro-preview-item"><div class="mv carb" id="prev-carb">0</div><div class="ml">koolh g</div></div>
-          <div class="macro-preview-item"><div class="mv fat" id="prev-fat">0</div><div class="ml">vet g</div></div>
-        </div>
-
-        <div id="meal-alert" style="display:none;"></div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-secondary" id="meal-fav-btn" style="flex:0 0 auto;">☆ Favoriet</button>
-          <button class="btn btn-primary" id="meal-save" style="flex:1;">Maaltijd opslaan</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- SUIKER + INSULINE -->
-    <div>
-      <div class="section-header">
-        <div class="section-title">Suiker & Insuline</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Bloedsuiker (Dexcom G7)</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Waarde (mmol/L)</label>
-            <input type="number" id="sugar-val" placeholder="bijv. 6.5" min="1" max="30" step="0.1">
-          </div>
-          <div class="form-group">
-            <label>Moment</label>
-            <select id="sugar-moment">
-              <option>Voor maaltijd</option>
-              <option>Na maaltijd</option>
-              <option>Nuchter</option>
-              <option>Voor slapen</option>
-              <option>Nacht</option>
-              <option>Anders</option>
-            </select>
-          </div>
-        </div>
-        <div id="sugar-alert" style="display:none;"></div>
-        <button class="btn btn-secondary" id="sugar-save" style="width:100%;margin-bottom:.75rem;">Suiker opslaan</button>
-
-        <div class="card-title" style="margin-top:.5rem;">Insuline (Omnipod)</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Eenheden</label>
-            <input type="number" id="insulin-units" placeholder="bijv. 4" min="0" step="0.5">
-          </div>
-          <div class="form-group">
-            <label>Type</label>
-            <select id="insulin-type">
-              <option>Bolus (maaltijd)</option>
-              <option>Correctie bolus</option>
-              <option>Basaal aanpassing</option>
-            </select>
-          </div>
-        </div>
-        <button class="btn btn-secondary" id="insulin-save" style="width:100%;">Insuline opslaan</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- SPORT -->
+  <!-- 1. DRINKEN -->
   <div class="section-header">
-    <div class="section-title">Beweging & Sport</div>
-  </div>
-  <div class="card">
-    <div class="form-row">
-      <div class="form-group" style="flex:2;">
-        <label>Activiteit</label>
-        <input type="text" id="sport-desc" placeholder="bijv. hardlopen, fietsen, krachttraining">
-      </div>
-      <div class="form-group">
-        <label>Duur (min)</label>
-        <input type="number" id="sport-dur" placeholder="30" min="1">
-      </div>
-      <div class="form-group">
-        <label>Intensiteit</label>
-        <select id="sport-int">
-          <option>Laag</option>
-          <option>Matig</option>
-          <option>Hoog</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Verbrand (kcal) <span style="color:var(--muted);font-size:10px;">optioneel</span></label>
-        <input type="number" id="sport-burned" placeholder="bijv. 320" min="0">
-      </div>
-    </div>
-    <button class="btn btn-secondary" id="sport-save">Activiteit opslaan</button>
-  </div>
-
-  <!-- DRINKEN -->
-  <div class="section-header" style="margin-top:1.25rem;">
     <div class="section-title">Drinken</div>
     <div style="font-size:12px;color:var(--muted);" id="water-today-nav">0 ml vandaag</div>
   </div>
   <div class="card">
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.875rem;" id="drink-quick-btns">
-      <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="150" data-cal="0">💧 Glas water<br><span style="font-size:10px;color:var(--muted);">150 ml</span></button>
-      <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="250" data-cal="0">💧 Water<br><span style="font-size:10px;color:var(--muted);">250 ml</span></button>
-      <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="500" data-cal="0">💧 Fles water<br><span style="font-size:10px;color:var(--muted);">500 ml</span></button>
-      <button class="btn btn-secondary drink-quick" data-drink="Koffie zwart" data-ml="150" data-cal="3">☕ Koffie<br><span style="font-size:10px;color:var(--muted);">150 ml</span></button>
-      <button class="btn btn-secondary drink-quick" data-drink="Koffie met melk" data-ml="200" data-cal="30">☕ Koffie + melk<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
-      <button class="btn btn-secondary drink-quick" data-drink="Thee" data-ml="250" data-cal="2">🍵 Thee<br><span style="font-size:10px;color:var(--muted);">250 ml</span></button>
-      <button class="btn btn-secondary drink-quick" data-drink="Groene thee" data-ml="250" data-cal="1">🍵 Groene thee<br><span style="font-size:10px;color:var(--muted);">250 ml</span></button>
-      <button class="btn btn-secondary drink-quick" data-drink="Sinaasappelsap" data-ml="200" data-cal="88">🍊 Sinaasappelsap<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.875rem;">
+      <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="200" data-cal="0" style="flex:1;min-width:80px;text-align:center;">💧 Water<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="500" data-cal="0" style="flex:1;min-width:80px;text-align:center;">💧 Fleswater<br><span style="font-size:10px;color:var(--muted);">500 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Thee" data-ml="200" data-cal="1" style="flex:1;min-width:80px;text-align:center;">🍵 Thee<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
+      <button class="btn btn-secondary drink-quick" data-drink="Koffie" data-ml="200" data-cal="3" style="flex:1;min-width:80px;text-align:center;">☕ Koffie<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
     </div>
     <div style="border-top:1px solid var(--border);padding-top:.875rem;">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:.5rem;">Of aangepaste hoeveelheid:</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:.5rem;">Aangepaste hoeveelheid:</div>
       <div class="form-row">
-        <div class="form-group">
-          <label>Drank</label>
-          <input type="text" id="drink-name" placeholder="bijv. Smoothie, Sportdrank...">
-        </div>
-        <div class="form-group" style="max-width:100px;">
-          <label>ml</label>
-          <input type="number" id="drink-ml" placeholder="250" min="1">
-        </div>
-        <div class="form-group" style="max-width:90px;">
-          <label>kcal</label>
-          <input type="number" id="drink-cal" placeholder="0" min="0">
-        </div>
+        <div class="form-group"><label>Drank</label><input type="text" id="drink-name" placeholder="bijv. Smoothie..."></div>
+        <div class="form-group" style="max-width:100px;"><label>ml</label><input type="number" id="drink-ml" placeholder="250" min="1"></div>
+        <div class="form-group" style="max-width:90px;"><label>kcal</label><input type="number" id="drink-cal" placeholder="0" min="0"></div>
       </div>
       <button class="btn btn-secondary" id="drink-custom-save">Toevoegen</button>
     </div>
     <div id="drink-alert" style="display:none;margin-top:.5rem;"></div>
+  </div>
+
+  <!-- 2. MAALTIJD -->
+  <div class="section-header" style="margin-top:1.25rem;">
+    <div class="section-title">Maaltijd</div>
+  </div>
+  <div class="card">
+    <!-- Maaltijdtype binnen de sectie -->
+    <div class="form-group" style="margin-bottom:.875rem;">
+      <label>Type maaltijd</label>
+      <select id="meal-type">
+        <option>Ontbijt</option><option>Lunch</option><option>Diner</option>
+        <option>Tussendoor</option><option>Snack</option>
+      </select>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="invoer">Invoer</button>
+      <button class="tab-btn" data-tab="favorieten">Favorieten</button>
+    </div>
+
+    <!-- TAB: INVOER -->
+    <div class="tab-panel active" id="tab-invoer">
+      <div class="form-group" style="margin-bottom:.5rem;">
+        <label>Zoek of scan product</label>
+        <div class="search-wrap">
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="food-search" placeholder="bijv. kipfilet, Brinta, EAN barcode..." autocomplete="off" style="flex:1;">
+            <button class="btn btn-secondary" id="scan-btn" style="flex:0 0 auto;padding:8px 12px;" title="Barcode scannen">📷</button>
+          </div>
+          <div class="search-results" id="search-results" style="display:none;"></div>
+        </div>
+      </div>
+      <div id="scanner-wrap" style="display:none;margin-bottom:.75rem;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Richt je camera op de barcode:</div>
+        <video id="scanner-video" style="width:100%;border-radius:var(--radius-sm);max-height:200px;object-fit:cover;" autoplay playsinline></video>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <div id="scan-status" style="flex:1;font-size:12px;color:var(--muted);padding-top:6px;">Zoeken naar barcode...</div>
+          <button class="btn btn-secondary btn-sm" id="scan-stop">Sluiten</button>
+        </div>
+      </div>
+      <div id="ingredients-list"></div>
+      <div id="manual-add-panel" style="display:none;background:var(--bg3);border-radius:var(--radius-sm);padding:.875rem;margin:.5rem 0;border:1px dashed var(--border2);">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:.625rem;">Niet gevonden — voeg zelf toe:</div>
+        <div class="form-group" style="margin-bottom:.5rem;"><label>Naam</label><input type="text" id="manual-name" placeholder="bijv. Mamas stamppot"></div>
+        <div class="form-row" style="margin-bottom:.5rem;">
+          <div class="form-group"><label>Calorieën</label><input type="number" id="manual-cal" placeholder="0" min="0"></div>
+          <div class="form-group"><label>Eiwit (g)</label><input type="number" id="manual-prot" placeholder="0" min="0" step="0.1"></div>
+        </div>
+        <div class="form-row" style="margin-bottom:.75rem;">
+          <div class="form-group"><label>Koolhydraten (g)</label><input type="number" id="manual-carb" placeholder="0" min="0" step="0.1"></div>
+          <div class="form-group"><label>Vetten (g)</label><input type="number" id="manual-fat" placeholder="0" min="0" step="0.1"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" id="manual-add-once">Alleen toevoegen</button>
+          <button class="btn btn-primary btn-sm" id="manual-add-save">Toevoegen & opslaan in database</button>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:.625rem;">
+        <label>Naam maaltijd</label>
+        <input type="text" id="meal-desc" placeholder="bijv. Ontbijt, Lunch thuis...">
+      </div>
+    </div>
+
+    <!-- TAB: FAVORIETEN -->
+    <div class="tab-panel" id="tab-favorieten">
+      <div id="fav-list"></div>
+      <div class="empty" id="fav-empty" style="display:none;">Nog geen favorieten opgeslagen.<br><span style="font-size:12px;">Gebruik de ☆ knop na het samenstellen van een maaltijd.</span></div>
+    </div>
+
+    <!-- MACRO PREVIEW -->
+    <div class="macro-preview" id="macro-preview">
+      <div class="macro-preview-item"><div class="mv cal" id="prev-cal">0</div><div class="ml">kcal</div></div>
+      <div class="macro-preview-item"><div class="mv prot" id="prev-prot">0</div><div class="ml">eiwit g</div></div>
+      <div class="macro-preview-item"><div class="mv carb" id="prev-carb">0</div><div class="ml">koolh g</div></div>
+      <div class="macro-preview-item"><div class="mv fat" id="prev-fat">0</div><div class="ml">vet g</div></div>
+    </div>
+
+    <div id="meal-alert" style="display:none;"></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-secondary" id="meal-fav-btn" style="flex:0 0 auto;">☆ Favoriet</button>
+      <button class="btn btn-primary" id="meal-save" style="flex:1;">Maaltijd opslaan</button>
+    </div>
+  </div>
+
+  <!-- 3. SPORT -->
+  <div class="section-header" style="margin-top:1.25rem;">
+    <div class="section-title">Beweging & Sport</div>
+  </div>
+  <div class="card">
+    <div class="form-row">
+      <div class="form-group" style="flex:2;"><label>Activiteit</label><input type="text" id="sport-desc" placeholder="bijv. hardlopen, fietsen, krachttraining"></div>
+      <div class="form-group"><label>Duur (min)</label><input type="number" id="sport-dur" placeholder="30" min="1"></div>
+      <div class="form-group"><label>Intensiteit</label>
+        <select id="sport-int"><option>Laag</option><option>Matig</option><option>Hoog</option></select>
+      </div>
+      <div class="form-group"><label>Verbrand (kcal) <span style="color:var(--muted);font-size:10px;">optioneel</span></label><input type="number" id="sport-burned" placeholder="bijv. 320" min="0"></div>
+    </div>
+    <button class="btn btn-secondary" id="sport-save">Activiteit opslaan</button>
+  </div>
+
+  <!-- 4. SUIKER & INSULINE -->
+  <div class="section-header" style="margin-top:1.25rem;">
+    <div class="section-title">Suiker & Insuline</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Bloedsuiker (Dexcom G7)</div>
+    <div class="form-row">
+      <div class="form-group"><label>Waarde (mmol/L)</label><input type="number" id="sugar-val" placeholder="bijv. 6.5" min="1" max="30" step="0.1"></div>
+      <div class="form-group"><label>Moment</label>
+        <select id="sugar-moment">
+          <option>Voor maaltijd</option><option>Na maaltijd</option><option>Nuchter</option>
+          <option>Voor slapen</option><option>Nacht</option><option>Anders</option>
+        </select>
+      </div>
+    </div>
+    <div id="sugar-alert" style="display:none;"></div>
+    <button class="btn btn-secondary" id="sugar-save" style="width:100%;margin-bottom:.75rem;">Suiker opslaan</button>
+    <div class="card-title" style="margin-top:.5rem;">Insuline (Omnipod)</div>
+    <div class="form-row">
+      <div class="form-group"><label>Eenheden</label><input type="number" id="insulin-units" placeholder="bijv. 4" min="0" step="0.5"></div>
+      <div class="form-group"><label>Type</label>
+        <select id="insulin-type">
+          <option>Bolus (maaltijd)</option><option>Correctie bolus</option><option>Basaal aanpassing</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-secondary" id="insulin-save" style="width:100%;">Insuline opslaan</button>
   </div>
 
 </div>
@@ -523,11 +468,37 @@
 <!-- PAGE: DASHBOARD -->
 <div class="page" id="page-dashboard">
 
-  <div class="section-header">
-    <div class="section-title">Vandaag</div>
+  <!-- FILTERS -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:.75rem;">
+      <button class="btn btn-secondary btn-sm dash-period active-filter" data-period="today">Vandaag</button>
+      <button class="btn btn-secondary btn-sm dash-period" data-period="week">Deze week</button>
+      <button class="btn btn-secondary btn-sm dash-period" data-period="custom">Aangepast</button>
+    </div>
+    <!-- Aangepast datumbereik -->
+    <div id="custom-date-row" style="display:none;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:.75rem;">
+      <div class="form-group" style="max-width:150px;margin:0;"><label>Van</label><input type="date" id="filter-from"></div>
+      <div class="form-group" style="max-width:150px;margin:0;"><label>Tot</label><input type="date" id="filter-to"></div>
+      <button class="btn btn-primary btn-sm" id="apply-date-filter" style="margin-top:18px;">Toepassen</button>
+    </div>
+    <!-- Maaltijdtype filter -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <span style="font-size:11px;color:var(--muted);padding-top:5px;">Maaltijd:</span>
+      <button class="btn btn-secondary btn-sm dash-mealtype active-filter" data-type="all">Alle</button>
+      <button class="btn btn-secondary btn-sm dash-mealtype" data-type="Ontbijt">Ontbijt</button>
+      <button class="btn btn-secondary btn-sm dash-mealtype" data-type="Lunch">Lunch</button>
+      <button class="btn btn-secondary btn-sm dash-mealtype" data-type="Diner">Diner</button>
+      <button class="btn btn-secondary btn-sm dash-mealtype" data-type="Tussendoor">Tussendoor</button>
+      <button class="btn btn-secondary btn-sm dash-mealtype" data-type="Snack">Snack</button>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;">
+    <div class="section-title" id="dash-period-label">Vandaag</div>
     <div style="font-size:12px;color:var(--muted);" id="dash-date"></div>
   </div>
 
+  <!-- STATS -->
   <div class="stat-grid" style="grid-template-columns:repeat(5,minmax(0,1fr));">
     <div class="stat-box"><div class="label">Calorieën</div><div class="val cal" id="d-cal">0</div></div>
     <div class="stat-box"><div class="label">Eiwit (g)</div><div class="val prot" id="d-prot">0</div></div>
@@ -539,14 +510,11 @@
   <!-- VOCHTINNAME BAR -->
   <div class="card" style="margin-bottom:1rem;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
-      <div style="font-size:12px;color:var(--muted);">Vochtinname vandaag</div>
+      <div style="font-size:12px;color:var(--muted);">Vochtinname</div>
       <div style="font-size:12px;font-family:'DM Mono',monospace;" id="d-water-label">0 / 2000 ml</div>
     </div>
     <div style="background:var(--bg3);border-radius:3px;height:8px;overflow:hidden;">
       <div id="water-bar" style="height:100%;background:linear-gradient(90deg,#60a5fa,#38bdf8);border-radius:3px;width:0%;transition:width .4s;"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px;">
-      <span>0</span><span>500</span><span>1000</span><span>1500</span><span>2000 ml</span>
     </div>
   </div>
 
@@ -560,7 +528,7 @@
       <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="d-sugar-label"></div>
     </div>
     <div class="stat-box" style="text-align:left;padding:1rem;">
-      <div class="label" style="margin-bottom:.5rem;">Insuline vandaag</div>
+      <div class="label" style="margin-bottom:.5rem;">Insuline totaal</div>
       <div style="display:flex;align-items:center;">
         <div class="val insulin" id="d-insulin-total">0</div>
         <div style="font-size:12px;color:var(--muted);margin-left:6px;">eenheden</div>
@@ -571,7 +539,7 @@
 
   <!-- MACRO VERDELING -->
   <div class="card" style="margin-top:1rem;">
-    <div class="card-title">Macro verdeling vandaag</div>
+    <div class="card-title">Macro verdeling</div>
     <div class="macro-bar" id="macro-bar">
       <div class="macro-bar-seg" style="background:var(--accent2);width:33%"></div>
       <div class="macro-bar-seg" style="background:var(--warning);width:33%"></div>
@@ -584,15 +552,15 @@
     </div>
   </div>
 
-  <!-- RECENTE MAALTIJDEN -->
+  <!-- MAALTIJDEN -->
   <div class="section-header" style="margin-top:1.25rem;">
-    <div class="section-title">Recente maaltijden</div>
+    <div class="section-title">Maaltijden</div>
   </div>
   <div id="dash-meals"></div>
 
-  <!-- RECENTE SUIKER -->
+  <!-- BLOEDSUIKER -->
   <div class="section-header" style="margin-top:1rem;">
-    <div class="section-title">Bloedsuiker vandaag</div>
+    <div class="section-title">Bloedsuiker</div>
   </div>
   <div id="dash-sugars"></div>
 
@@ -1554,24 +1522,86 @@ document.getElementById('sport-save').addEventListener('click', async function()
   document.getElementById('sport-burned').value='';
 });
 
+// ─── DASHBOARD FILTERS ────────────────────────────────────
+var dashPeriod   = 'today';
+var dashMealType = 'all';
+var dashFrom     = null;
+var dashTo       = null;
+
+document.querySelectorAll('.dash-period').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    dashPeriod = btn.dataset.period;
+    document.querySelectorAll('.dash-period').forEach(function(b){ b.classList.remove('active-filter'); b.style.borderColor=''; b.style.color=''; });
+    btn.classList.add('active-filter'); btn.style.borderColor='var(--accent)'; btn.style.color='var(--accent)';
+    var customRow = document.getElementById('custom-date-row');
+    customRow.style.display = dashPeriod==='custom' ? 'flex' : 'none';
+    if(dashPeriod !== 'custom') renderDashboard();
+  });
+});
+
+document.querySelectorAll('.dash-mealtype').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    dashMealType = btn.dataset.type;
+    document.querySelectorAll('.dash-mealtype').forEach(function(b){ b.classList.remove('active-filter'); b.style.borderColor=''; b.style.color=''; });
+    btn.classList.add('active-filter'); btn.style.borderColor='var(--accent)'; btn.style.color='var(--accent)';
+    renderDashboard();
+  });
+});
+
+document.getElementById('apply-date-filter').addEventListener('click', function(){
+  dashFrom = document.getElementById('filter-from').value;
+  dashTo   = document.getElementById('filter-to').value;
+  if(dashFrom && dashTo) renderDashboard();
+});
+
+function getFilteredEntries() {
+  var now = new Date();
+  return STATE.entries.filter(function(e){
+    var d = new Date(e.ts);
+    if(dashPeriod === 'today') {
+      return d.getDate()===now.getDate() && d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+    } else if(dashPeriod === 'week') {
+      // Ma t/m vandaag
+      var monday = new Date(now);
+      monday.setDate(now.getDate() - ((now.getDay()+6)%7));
+      monday.setHours(0,0,0,0);
+      return d >= monday && d <= now;
+    } else if(dashPeriod === 'custom' && dashFrom && dashTo) {
+      var from = new Date(dashFrom); from.setHours(0,0,0,0);
+      var to   = new Date(dashTo);   to.setHours(23,59,59,999);
+      return d >= from && d <= to;
+    }
+    return isToday(e.ts);
+  });
+}
+
 // ─── DASHBOARD ────────────────────────────────────────────
 function renderDashboard(){
   document.getElementById('dash-date').textContent = dateStr();
-  var today = STATE.entries.filter(function(e){ return isToday(e.ts); });
+
+  // Periodelabel
+  var label = dashPeriod==='today' ? 'Vandaag' : dashPeriod==='week' ? 'Deze week' : (dashFrom&&dashTo ? dashFrom+' t/m '+dashTo : 'Aangepast');
+  document.getElementById('dash-period-label').textContent = label;
+
+  var filtered = getFilteredEntries();
+
+  // Maaltijden gefilterd op type
+  var meals = filtered.filter(function(e){
+    if(e.kind !== 'meal') return false;
+    return dashMealType === 'all' || e.type === dashMealType;
+  });
 
   var cal=0,prot=0,carb=0,fat=0;
-  today.filter(function(e){return e.kind==='meal';}).forEach(function(e){
-    cal+=e.cal; prot+=e.prot; carb+=e.carb; fat+=e.fat;
-  });
+  meals.forEach(function(e){ cal+=e.cal; prot+=e.prot; carb+=e.carb; fat+=e.fat; });
   document.getElementById('d-cal').textContent  = Math.round(cal);
   document.getElementById('d-prot').textContent = Math.round(prot*10)/10;
   document.getElementById('d-carb').textContent = Math.round(carb*10)/10;
   document.getElementById('d-fat').textContent  = Math.round(fat*10)/10;
 
   // water/vocht
-  var drinks = today.filter(function(e){ return e.kind==='drink'; });
+  var drinks = filtered.filter(function(e){ return e.kind==='drink'; });
   var waterTotal = drinks.reduce(function(s,e){ return s+(e.ml||0); },0);
-  var waterGoal = STATE.goals.waterGoal || 2000;
+  var waterGoal = (STATE.goals.waterGoal||2000) * (dashPeriod==='week'?7:1);
   var waterPct = Math.min(100, Math.round(waterTotal/waterGoal*100));
   var wEl = document.getElementById('d-water');
   if(wEl) wEl.textContent = waterTotal;
@@ -1580,6 +1610,8 @@ function renderDashboard(){
   var wBar = document.getElementById('water-bar');
   if(wBar) wBar.style.width = waterPct+'%';
   updateWaterNav();
+
+  // macro bar
   var total = prot+carb+fat;
   if(total>0){
     var pp=Math.round(prot/total*100), cp=Math.round(carb/total*100), fp=100-pp-cp;
@@ -1590,60 +1622,57 @@ function renderDashboard(){
   }
 
   // suiker
-  var sugars = today.filter(function(e){return e.kind==='sugar';});
+  var sugars = filtered.filter(function(e){ return e.kind==='sugar'; });
   var lastSugar = sugars[sugars.length-1];
   if(lastSugar){
     var sv = lastSugar.val;
     var el = document.getElementById('d-sugar-val');
     el.textContent = sv;
     var low=STATE.goals.sugarLow||3.9, high=STATE.goals.sugarHigh||10;
-    el.style.color = sv < low ? 'var(--danger)' : sv > high ? 'var(--warning)' : 'var(--success)';
-    document.getElementById('d-sugar-label').textContent = lastSugar.moment + ' · ' + displayTs(lastSugar.ts);
+    el.style.color = sv<low?'var(--danger)':sv>high?'var(--warning)':'var(--success)';
+    document.getElementById('d-sugar-label').textContent = lastSugar.moment+' · '+displayTs(lastSugar.ts);
   } else {
     document.getElementById('d-sugar-val').textContent='—';
-    document.getElementById('d-sugar-label').textContent='Nog geen meting vandaag';
+    document.getElementById('d-sugar-label').textContent='Geen meting in periode';
   }
 
-  // insuline totaal
-  var insulinTotal = today.filter(function(e){return e.kind==='insulin';}).reduce(function(s,e){return s+e.units;},0);
+  // insuline
+  var insulinTotal = filtered.filter(function(e){ return e.kind==='insulin'; }).reduce(function(s,e){ return s+e.units; },0);
   document.getElementById('d-insulin-total').textContent = Math.round(insulinTotal*10)/10;
 
-  // maaltijden
-  var meals = today.filter(function(e){return e.kind==='meal';}).slice().reverse();
+  // maaltijden lijst
   var mealEl = document.getElementById('dash-meals');
-  if(!meals.length){ mealEl.innerHTML='<div class="empty">Nog geen maaltijden vandaag.</div>'; }
+  if(!meals.length){ mealEl.innerHTML='<div class="empty">Geen maaltijden in deze periode.</div>'; }
   else {
-    mealEl.innerHTML = meals.map(function(e){
+    mealEl.innerHTML = meals.slice().reverse().map(function(e){
       return '<div class="log-entry entry-meal">' +
         '<div style="flex:1;">' +
-          '<div class="type-tag">' + e.type + '</div>' +
-          '<div class="desc">' + e.desc + '</div>' +
-          '<div>' +
-            '<span class="pill pill-cal">' + e.cal + ' kcal</span>' +
-            '<span class="pill pill-prot">' + e.prot + 'g eiwit</span>' +
-            '<span class="pill pill-carb">' + e.carb + 'g koolh</span>' +
-            '<span class="pill pill-fat">' + e.fat + 'g vet</span>' +
-          '</div>' +
+          '<div class="type-tag">'+e.type+'</div>' +
+          '<div class="desc">'+e.desc+'</div>' +
+          '<div><span class="pill pill-cal">'+e.cal+' kcal</span>' +
+          '<span class="pill pill-prot">'+e.prot+'g eiwit</span>' +
+          '<span class="pill pill-carb">'+e.carb+'g koolh</span>' +
+          '<span class="pill pill-fat">'+e.fat+'g vet</span></div>' +
         '</div>' +
-        '<div class="time-badge">' + displayTs(e.ts) + '</div>' +
+        '<div class="time-badge">'+displayTs(e.ts)+'</div>' +
       '</div>';
     }).join('');
   }
 
   // suiker lijst
   var sugarEl = document.getElementById('dash-sugars');
-  if(!sugars.length){ sugarEl.innerHTML='<div class="empty">Nog geen metingen vandaag.</div>'; }
+  if(!sugars.length){ sugarEl.innerHTML='<div class="empty">Geen metingen in deze periode.</div>'; }
   else {
     var low2=STATE.goals.sugarLow||3.9, high2=STATE.goals.sugarHigh||10;
     sugarEl.innerHTML = sugars.slice().reverse().map(function(e){
-      var col = e.val<low2?'var(--danger)':e.val>high2?'var(--warning)':'var(--success)';
-      var lbl = e.val<low2?'Te laag':e.val>high2?'Te hoog':'In range';
+      var col=e.val<low2?'var(--danger)':e.val>high2?'var(--warning)':'var(--success)';
+      var lbl=e.val<low2?'Te laag':e.val>high2?'Te hoog':'In range';
       return '<div class="log-entry entry-sugar">' +
         '<div style="flex:1;">' +
-          '<div class="type-tag">' + e.moment + '</div>' +
-          '<div class="desc" style="color:'+col+';">' + e.val + ' mmol/L <span style="font-size:12px;font-weight:400;color:var(--muted);">— ' + lbl + '</span></div>' +
+          '<div class="type-tag">'+e.moment+'</div>' +
+          '<div class="desc" style="color:'+col+';">'+e.val+' mmol/L <span style="font-size:12px;font-weight:400;color:var(--muted);">— '+lbl+'</span></div>' +
         '</div>' +
-        '<div class="time-badge">' + displayTs(e.ts) + '</div>' +
+        '<div class="time-badge">'+displayTs(e.ts)+'</div>' +
       '</div>';
     }).join('');
   }
