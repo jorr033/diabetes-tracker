@@ -646,7 +646,25 @@
 <div class="page" id="page-logboek">
   <div class="section-header">
     <div class="section-title">Logboek</div>
-    <button class="btn btn-danger btn-sm" id="clear-log">Alles wissen</button>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-secondary btn-sm" id="show-trash-btn">🗑 Prullenbak</button>
+      <button class="btn btn-danger btn-sm" id="clear-log">Alles wissen</button>
+    </div>
+  </div>
+
+  <!-- PRULLENBAK PANEL -->
+  <div id="trash-panel" style="display:none;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem;">
+      <div>
+        <div style="font-size:14px;font-weight:500;">Prullenbak</div>
+        <div style="font-size:12px;color:var(--muted);">Verwijderde items worden na 7 dagen definitief gewist</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-danger btn-sm" id="empty-trash-btn">Prullenbak leegmaken</button>
+        <button class="btn btn-secondary btn-sm" id="close-trash-btn">Sluiten</button>
+      </div>
+    </div>
+    <div id="trash-entries"><div class="empty">Prullenbak laden...</div></div>
   </div>
   <div id="log-filter" style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
     <button class="btn btn-secondary btn-sm active-filter" data-filter="all">Alles</button>
@@ -794,9 +812,65 @@ async function saveEntry(entry) {
 async function deleteEntry(id) {
   if(!USER_ID) return;
   try {
+    // Zoek de entry op
+    var entry = STATE.entries.find(function(e){ return e.id === id; });
+    if(entry) {
+      // Kopieer naar prullenbak met vervaldatum (7 dagen)
+      var trashEntry = Object.assign({}, entry, {
+        deletedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 7*24*60*60*1000).toISOString()
+      });
+      await setDoc(doc(db, 'gebruikers', USER_ID, 'trash', id), trashEntry);
+    }
     await deleteDoc(doc(db, 'gebruikers', USER_ID, 'entries', id));
     STATE.entries = STATE.entries.filter(function(e){ return e.id !== id; });
   } catch(e) { console.error('Entry verwijderen mislukt:', e); }
+}
+
+async function loadTrash() {
+  if(!USER_ID) return [];
+  try {
+    const snap = await getDocs(collection(db, 'gebruikers', USER_ID, 'trash'));
+    var items = [];
+    var now = new Date();
+    snap.forEach(function(d){
+      var item = Object.assign({ id: d.id }, d.data());
+      // Verwijder automatisch verlopen items
+      if(new Date(item.expiresAt) > now) {
+        items.push(item);
+      } else {
+        deleteDoc(doc(db, 'gebruikers', USER_ID, 'trash', d.id));
+      }
+    });
+    return items.sort(function(a,b){ return new Date(b.deletedAt)-new Date(a.deletedAt); });
+  } catch(e) { return []; }
+}
+
+async function restoreEntry(id) {
+  if(!USER_ID) return;
+  try {
+    const snap = await getDoc(doc(db, 'gebruikers', USER_ID, 'trash', id));
+    if(!snap.exists()) return false;
+    var data = snap.data();
+    delete data.deletedAt;
+    delete data.expiresAt;
+    // Herstel naar entries met zelfde ID
+    await setDoc(doc(db, 'gebruikers', USER_ID, 'entries', id), data);
+    await deleteDoc(doc(db, 'gebruikers', USER_ID, 'trash', id));
+    data.id = id;
+    STATE.entries.push(data);
+    return true;
+  } catch(e) { console.error('Herstel mislukt:', e); return false; }
+}
+
+async function emptyTrash() {
+  if(!USER_ID) return;
+  try {
+    const snap = await getDocs(collection(db, 'gebruikers', USER_ID, 'trash'));
+    for(const d of snap.docs) {
+      await deleteDoc(doc(db, 'gebruikers', USER_ID, 'trash', d.id));
+    }
+  } catch(e) { console.error('Prullenbak leegmaken mislukt:', e); }
 }
 
 async function loadEntries() {
@@ -1920,16 +1994,88 @@ document.querySelectorAll('#log-filter button').forEach(function(btn){
 });
 
 document.getElementById('clear-log').addEventListener('click', async function(){
-  if(confirm('Weet je zeker dat je alle entries wilt verwijderen?')){
+  if(confirm('Entries verplaatsen naar prullenbak? Je kunt ze binnen 7 dagen herstellen.')){
     setSyncStatus('saving');
-    for(var i=0; i<STATE.entries.length; i++){
-      if(STATE.entries[i].id) await deleteEntry(STATE.entries[i].id);
+    var toDelete = STATE.entries.slice();
+    for(var i=0; i<toDelete.length; i++){
+      if(toDelete[i].id) await deleteEntry(toDelete[i].id);
     }
     STATE.entries=[];
     setSyncStatus('ok');
     renderLog();
+    renderDashboard();
   }
 });
+
+// ─── PRULLENBAK ───────────────────────────────────────────
+document.getElementById('show-trash-btn').addEventListener('click', async function(){
+  var panel = document.getElementById('trash-panel');
+  panel.style.display = 'block';
+  await renderTrash();
+});
+
+document.getElementById('close-trash-btn').addEventListener('click', function(){
+  document.getElementById('trash-panel').style.display = 'none';
+});
+
+document.getElementById('empty-trash-btn').addEventListener('click', async function(){
+  if(confirm('Prullenbak definitief leegmaken? Dit kan niet ongedaan worden gemaakt.')){
+    setSyncStatus('saving');
+    await emptyTrash();
+    setSyncStatus('ok');
+    document.getElementById('trash-entries').innerHTML = '<div class="empty">Prullenbak is leeg.</div>';
+  }
+});
+
+async function renderTrash() {
+  var el = document.getElementById('trash-entries');
+  el.innerHTML = '<div class="empty" style="color:var(--muted);">Laden...</div>';
+  var items = await loadTrash();
+  if(!items.length){
+    el.innerHTML = '<div class="empty">Prullenbak is leeg.</div>';
+    return;
+  }
+  el.innerHTML = items.map(function(e){
+    var deletedDate = new Date(e.deletedAt);
+    var expiresDate = new Date(e.expiresAt);
+    var daysLeft = Math.ceil((expiresDate - new Date()) / (1000*60*60*24));
+    var desc = '';
+    if(e.kind==='meal')    desc = e.type+' — '+e.desc;
+    else if(e.kind==='drink')  desc = 'Drinken — '+e.drink+' '+e.ml+'ml';
+    else if(e.kind==='sugar')  desc = 'Bloedsuiker — '+e.val+' mmol/L';
+    else if(e.kind==='insulin')desc = 'Insuline — '+e.units+' eenheden';
+    else if(e.kind==='sport')  desc = 'Sport — '+e.desc;
+    return '<div class="log-entry" style="border-left:3px solid var(--danger);">' +
+      '<div style="flex:1;">' +
+        '<div class="desc">'+desc+'</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:3px;">' +
+          'Verwijderd op '+displayTs(e.deletedAt)+' · nog '+daysLeft+' dag'+(daysLeft===1?'':'en')+
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">' +
+        '<div class="time-badge">'+displayTs(e.ts)+'</div>' +
+        '<button class="btn btn-secondary btn-sm restore-btn" data-id="'+e.id+'">Herstellen</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  el.querySelectorAll('.restore-btn').forEach(function(btn){
+    btn.addEventListener('click', async function(){
+      btn.disabled = true;
+      btn.textContent = '...';
+      setSyncStatus('saving');
+      var ok = await restoreEntry(btn.dataset.id);
+      setSyncStatus('ok');
+      if(ok){
+        renderLog();
+        renderDashboard();
+        await renderTrash();
+      } else {
+        btn.textContent = 'Mislukt';
+      }
+    });
+  });
+}
 
 function renderLog(){
   var filtered = STATE.entries.filter(function(e){
@@ -1972,7 +2118,7 @@ function renderLog(){
       '<div style="flex:1;">'+content+'</div>' +
       '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">' +
         '<div class="time-badge">'+displayTs(e.ts)+'</div>' +
-        '<button class="btn btn-danger btn-sm del-btn" data-idx="'+e.id+'">✕</button>' +
+        '<button class="btn btn-danger btn-sm del-btn" data-idx="'+e.id+'" title="Verplaats naar prullenbak">🗑</button>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -2347,10 +2493,11 @@ document.getElementById('export-btn').addEventListener('click', function(){
   a.click();
 });
 document.getElementById('reset-btn').addEventListener('click', async function(){
-  if(confirm('Alle data permanent wissen? Dit kan niet ongedaan worden gemaakt.')){
+  if(confirm('Alle data naar prullenbak verplaatsen? Je kunt ze binnen 7 dagen herstellen.')){
     setSyncStatus('saving');
-    for(var i=0; i<STATE.entries.length; i++){
-      if(STATE.entries[i].id) await deleteEntry(STATE.entries[i].id);
+    var toDelete = STATE.entries.slice();
+    for(var i=0; i<toDelete.length; i++){
+      if(toDelete[i].id) await deleteEntry(toDelete[i].id);
     }
     STATE.entries=[];
     setSyncStatus('ok');
