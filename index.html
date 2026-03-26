@@ -1165,8 +1165,9 @@ onAuthStateChanged(auth, async function(user) {
     loadGoals();
     renderReminders();
     renderDashboard();
-    // Toon welkomstbericht na laden
+    renderFAQ();
     setTimeout(function(){ showWelcomeModal(user); }, 300);
+    setTimeout(showTip, 2000);
 
   } else {
     currentUser = null;
@@ -1209,6 +1210,7 @@ document.querySelectorAll('.nav-tab').forEach(function(btn){
     document.getElementById('page-'+btn.dataset.page).classList.add('active');
     if(btn.dataset.page==='dashboard') renderDashboard();
     if(btn.dataset.page==='logboek') renderLog();
+    if(btn.dataset.page==='info') renderFAQ();
   });
 });
 
@@ -3097,8 +3099,6 @@ function renderFAQ() {
 
 // init
 renderDashboard();
-renderFAQ();
-setTimeout(showTip, 1500);
 </script>
 </body>
 </html>
