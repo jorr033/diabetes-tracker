@@ -1232,7 +1232,7 @@ function localSearch(q) {
   return all.filter(function(f){
     var name = f.n.toLowerCase();
     return terms.every(function(t){ return name.indexOf(t) >= 0; });
-  }).slice(0, 5);
+  }).slice(0, 8);
 }
 
 // OFF product mappen inclusief portiegrootte
@@ -1264,7 +1264,7 @@ async function offSearch(q) {
   try {
     var url = 'https://world.openfoodfacts.org/cgi/search.pl'
       + '?search_terms=' + encodeURIComponent(q)
-      + '&search_simple=1&action=process&json=1&page_size=8&sort_by=unique_scans_n'
+      + '&search_simple=1&action=process&json=1&page_size=20&sort_by=unique_scans_n'
       + '&fields=product_name,nutriments,brands,quantity,serving_size,serving_quantity';
     var r = await fetch(url);
     var data = await r.json();
@@ -1272,7 +1272,8 @@ async function offSearch(q) {
     return data.products
       .filter(function(p){ return p.product_name && p.nutriments; })
       .map(mapOFFProduct)
-      .filter(function(f){ return f.cal > 0 && f.n.trim().length > 0; });
+      .filter(function(f){ return f.n.trim().length > 0; })
+      .slice(0, 12);
   } catch(e) { return []; }
 }
 
@@ -2344,30 +2345,59 @@ function localDrinkSearch(q) {
 
 async function offDrinkSearch(q) {
   try {
+    // Vraag meer resultaten op zonder strikte categorie-filter
+    // Gebruik twee zoekopdrachten parallel: wereldwijd + NL
     var url = 'https://world.openfoodfacts.org/cgi/search.pl'
       + '?search_terms=' + encodeURIComponent(q)
-      + '&search_simple=1&action=process&json=1&page_size=8&sort_by=unique_scans_n'
-      + '&fields=product_name,nutriments,brands,quantity,serving_size,serving_quantity,categories_tags';
+      + '&search_simple=1&action=process&json=1&page_size=20&sort_by=unique_scans_n'
+      + '&fields=product_name,nutriments,brands,quantity,serving_size,serving_quantity,categories_tags,product_quantity';
     var r = await fetch(url);
     var data = await r.json();
     if(!data.products) return [];
-    return data.products
+
+    var results = data.products
       .filter(function(p){
         if(!p.product_name || !p.nutriments) return false;
-        // Filter op drank-categorieën van OFF
-        var cats = (p.categories_tags||[]).join(' ');
+        var n = p.nutriments;
+        // Moet calorieën hebben
+        var cal = n['energy-kcal_100g'] || (n['energy_100g'] ? n['energy_100g']/4.184 : 0);
+        if(cal < 0) return false;
+
+        // Is het een drank? Breed controleren:
+        var cats = (p.categories_tags||[]).join(' ').toLowerCase();
         var name = (p.product_name||'').toLowerCase();
-        var isDrinkProduct = cats.indexOf('beverages')>=0 || cats.indexOf('drinks')>=0
-          || cats.indexOf('waters')>=0 || cats.indexOf('juices')>=0
-          || cats.indexOf('sodas')>=0 || cats.indexOf('coffees')>=0
-          || cats.indexOf('teas')>=0 || cats.indexOf('milks')>=0
-          || cats.indexOf('smoothies')>=0 || cats.indexOf('beers')>=0
-          || cats.indexOf('wines')>=0 || cats.indexOf('dranken')>=0
-          || DRINK_KEYWORDS.some(function(k){ return name.indexOf(k)>=0; });
-        return isDrinkProduct;
+        var brand = (p.brands||'').toLowerCase();
+
+        // Bekende drankmerken direct toestaan
+        var knownBrands = ['coca-cola','cola','pepsi','fanta','sprite','7up','7-up',
+          'aquarius','powerade','gatorade','red bull','monster','ola','fuze','innocent',
+          'lipton','pickwick','douwe egberts','nescafe','starbucks','hero','appelsientje',
+          'coolbest','tropicana','capri-sun','hartwall','amstel','heineken','jupiler',
+          'bavaria','carlsberg','desperados','heineken','spa','sourcy','evian','volvic',
+          'nutricia','chocomel','fristi','mona','alpro','oatly','dutch'];
+        var isBrand = knownBrands.some(function(b){ return name.indexOf(b)>=0 || brand.indexOf(b)>=0; });
+
+        // Drankcategorieën
+        var isCat = cats.indexOf('beverage')>=0 || cats.indexOf('drink')>=0
+          || cats.indexOf('water')>=0 || cats.indexOf('juice')>=0
+          || cats.indexOf('soda')>=0 || cats.indexOf('coffee')>=0
+          || cats.indexOf('tea')>=0 || cats.indexOf('milk')>=0
+          || cats.indexOf('smoothie')>=0 || cats.indexOf('beer')>=0
+          || cats.indexOf('wine')>=0 || cats.indexOf('drank')>=0
+          || cats.indexOf('limonade')>=0 || cats.indexOf('frisdrank')>=0
+          || cats.indexOf('siroop')>=0 || cats.indexOf('sport')>=0
+          || cats.indexOf('energy')>=0 || cats.indexOf('shake')>=0;
+
+        // Naam bevat drankwoord
+        var isNameDrink = DRINK_KEYWORDS.some(function(k){ return name.indexOf(k)>=0; });
+
+        return isBrand || isCat || isNameDrink;
       })
       .map(function(p){ return mapOFFProduct(p); })
-      .filter(function(f){ return f.n.trim().length > 0; });
+      .filter(function(f){ return f.n.trim().length > 0; })
+      .slice(0, 10);
+
+    return results;
   } catch(e) { return []; }
 }
 
