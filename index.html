@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mijn Gezondheid</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #181c27;
+    --bg3: #1e2333;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #eef0f5;
+    --muted: #7a80a0;
+    --accent: #4f8ef7;
+    --accent2: #6ee7b7;
+    --accent3: #f97316;
+    --accent4: #e879f9;
+    --danger: #f87171;
+    --success: #6ee7b7;
+    --warning: #fbbf24;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(15,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1.5rem; height: 56px;
+  }
+  .nav-logo { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--accent); letter-spacing: 0.05em; }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab {
+    background: none; border: none; color: var(--muted);
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    padding: 6px 14px; border-radius: var(--radius-sm); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .nav-tab:hover { color: var(--text); background: var(--bg3); }
+  .nav-tab.active { color: var(--accent); background: rgba(79,142,247,0.12); }
+  .nav-time { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+
+  /* PAGES */
+  .page { display: none; padding: 1.5rem; max-width: 900px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem;
+  }
+  .card-title { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; }
+
+  /* STAT GRID */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 1rem; }
+  .stat-box {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 1rem; text-align: center;
+  }
+  .stat-box .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .stat-box .val { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; }
+  .val.cal { color: var(--accent); }
+  .val.prot { color: var(--accent2); }
+  .val.carb { color: var(--warning); }
+  .val.fat { color: var(--accent3); }
+  .val.sugar { color: var(--accent4); }
+  .val.insulin { color: var(--accent); }
+
+  /* FORMS */
+  .form-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; }
+  .form-group label { font-size: 12px; color: var(--muted); }
+  input, textarea, select {
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    padding: 8px 12px; width: 100%;
+    transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none; border-color: var(--accent);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  select option { background: var(--bg2); }
+
+  /* BUTTONS */
+  .btn {
+    border: none; border-radius: var(--radius-sm); cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+    padding: 9px 18px; transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #3a7de8; }
+  .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border2); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-danger { background: rgba(248,113,113,0.15); color: var(--danger); border: 1px solid rgba(248,113,113,0.3); }
+  .btn-danger:hover { background: rgba(248,113,113,0.25); }
+
+  /* PILLS */
+  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500; margin-right: 4px; font-family: 'DM Mono', monospace; }
+  .pill-cal { background: rgba(79,142,247,0.15); color: #7eb3fa; }
+  .pill-prot { background: rgba(110,231,183,0.15); color: var(--accent2); }
+  .pill-carb { background: rgba(251,191,36,0.15); color: var(--warning); }
+  .pill-fat { background: rgba(249,115,22,0.15); color: var(--accent3); }
+
+  /* LOG ENTRIES */
+  .log-entry {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: .875rem 1rem;
+    margin-bottom: 8px; display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 12px;
+  }
+  .log-entry .time-badge {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--muted); white-space: nowrap; margin-top: 2px;
+  }
+  .log-entry .desc { font-size: 14px; font-weight: 500; margin-bottom: 5px; }
+  .log-entry .type-tag {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin-bottom: 4px;
+  }
+  .entry-sugar { border-left: 3px solid var(--accent4); }
+  .entry-insulin { border-left: 3px solid var(--accent); }
+  .entry-sport { border-left: 3px solid var(--success); }
+  .entry-meal { border-left: 3px solid var(--warning); }
+
+  /* SUGAR INDICATOR */
+  .sugar-level {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; margin-right: 6px;
+  }
+  .sugar-low { background: var(--danger); }
+  .sugar-ok { background: var(--success); }
+  .sugar-high { background: var(--warning); }
+
+  /* CHART */
+  .chart-wrap { position: relative; height: 160px; margin-top: 1rem; }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: 13px; }
+
+  /* NOTIFICATION BANNER */
+  .notif-banner {
+    background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.3);
+    border-radius: var(--radius); padding: .875rem 1.25rem;
+    display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;
+  }
+  .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+
+  /* MACRO BAR */
+  .macro-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; margin: 8px 0; gap: 2px; }
+  .macro-bar-seg { height: 100%; border-radius: 2px; transition: width 0.4s; }
+
+  /* SECTION HEADER */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .section-title { font-size: 16px; font-weight: 600; }
+
+  /* GRID 2 */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media(max-width: 600px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .nav-time { display: none; }
+  }
+
+  /* ALERT */
+  .alert { border-radius: var(--radius-sm); padding: .75rem 1rem; font-size: 13px; margin-bottom: .75rem; }
+  .alert-danger { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--danger); }
+  .alert-success { background: rgba(110,231,183,0.1); border: 1px solid rgba(110,231,183,0.3); color: var(--success); }
+  .alert-info { background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.3); color: #7eb3fa; }
+
+  /* REMINDER SETTINGS */
+  .reminder-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .reminder-row input[type=time] { max-width: 120px; }
+  .toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0; background: var(--bg3);
+    border: 1px solid var(--border2); border-radius: 999px; cursor: pointer; transition: .2s;
+  }
+  .toggle-slider:before {
+    content: ''; position: absolute; width: 14px; height: 14px;
+    left: 2px; top: 2px; background: var(--muted);
+    border-radius: 50%; transition: .2s;
+  }
+  .toggle input:checked + .toggle-slider { background: rgba(79,142,247,0.3); border-color: var(--accent); }
+  .toggle input:checked + .toggle-slider:before { transform: translateX(16px); background: var(--accent); }
+
+  /* MAALTIJD BUILDER */
+  .search-wrap { position: relative; }
+  .search-results {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50;
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); max-height: 240px; overflow-y: auto;
+  }
+  .search-item {
+    padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    transition: background 0.1s;
+  }
+  .search-item:last-child { border-bottom: none; }
+  .search-item:hover { background: var(--bg3); }
+  .search-item-name { font-size: 14px; }
+  .search-item-meta { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .ingredient-row {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg3); border-radius: var(--radius-sm);
+    padding: 8px 10px; margin-bottom: 6px;
+  }
+  .ingredient-name { flex: 1; font-size: 13px; }
+  .ingredient-row input[type=number] { width: 70px; padding: 4px 8px; font-size: 13px; text-align: right; }
+  .ingredient-unit { font-size: 12px; color: var(--muted); min-width: 20px; }
+  .macro-preview {
+    background: var(--bg3); border-radius: var(--radius-sm);
+    padding: .75rem 1rem; margin: .75rem 0;
+    display: flex; gap: 1rem; flex-wrap: wrap;
+  }
+  .macro-preview-item { text-align: center; flex: 1; min-width: 50px; }
+  .macro-preview-item .mv { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; }
+  .macro-preview-item .ml { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .fav-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg3); border-radius: var(--radius-sm);
+    padding: 8px 12px; margin-bottom: 6px; cursor: pointer;
+    border: 1px solid var(--border); transition: border-color 0.15s;
+  }
+  .fav-item:hover { border-color: var(--accent); }
+  .fav-name { flex: 1; font-size: 13px; font-weight: 500; }
+  .fav-meta { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  .tab-btn {
+    background: none; border: none; color: var(--muted);
+    font-size: 13px; padding: 4px 12px; cursor: pointer;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+  }
+  .tab-btn.active { color: var(--accent); background: rgba(79,142,247,0.1); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">● gezondheid</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-page="invoer">Invoer</button>
+    <button class="nav-tab" data-page="dashboard">Dashboard</button>
+    <button class="nav-tab" data-page="logboek">Logboek</button>
+    <button class="nav-tab" data-page="instellingen">Instellingen</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div id="sync-status" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">● laden...</div>
+    <div class="nav-time" id="nav-time"></div>
+  </div>
+</nav>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;">
+  <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--accent);margin-bottom:12px;">● gezondheid</div>
+  <div style="font-size:13px;color:var(--muted);">Data laden uit de cloud...</div>
+</div>
+
+<!-- PAGE: INVOER -->
+<div class="page active" id="page-invoer">
+
+  <div id="meal-reminder" class="notif-banner" style="display:none;">
+    <div class="notif-dot"></div>
+    <div style="flex:1;">
+      <div style="font-weight:500;font-size:14px;">Tijd om je maaltijd in te voeren</div>
+      <div style="font-size:12px;color:var(--muted);" id="reminder-time-label"></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <!-- MAALTIJD BUILDER -->
+    <div>
+      <div class="section-header">
+        <div class="section-title">Maaltijd</div>
+        <select id="meal-type" style="font-size:12px;padding:4px 8px;max-width:130px;">
+          <option>Ontbijt</option><option>Lunch</option><option>Diner</option>
+          <option>Tussendoor</option><option>Snack</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="invoer">Invoer</button>
+          <button class="tab-btn" data-tab="favorieten">Favorieten</button>
+        </div>
+
+        <!-- TAB: INVOER (zoeken + handmatig gecombineerd) -->
+        <div class="tab-panel active" id="tab-invoer">
+          <!-- Zoekbalk -->
+          <div class="form-group" style="margin-bottom:.5rem;">
+            <label>Zoek of typ zelf</label>
+            <div class="search-wrap">
+              <input type="text" id="food-search" placeholder="bijv. kipfilet, havermout, pasta bolognese..." autocomplete="off">
+              <div class="search-results" id="search-results" style="display:none;"></div>
+            </div>
+          </div>
+
+          <!-- Ingrediëntenlijst -->
+          <div id="ingredients-list"></div>
+
+          <!-- Handmatig toevoegen panel (verschijnt als niets gevonden) -->
+          <div id="manual-add-panel" style="display:none; background:var(--bg3); border-radius:var(--radius-sm); padding:.875rem; margin:.5rem 0; border:1px dashed var(--border2);">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:.625rem;">Niet gevonden — voeg zelf toe:</div>
+            <div class="form-group" style="margin-bottom:.5rem;">
+              <label>Naam</label>
+              <input type="text" id="manual-name" placeholder="bijv. Mamas stamppot">
+            </div>
+            <div class="form-row" style="margin-bottom:.5rem;">
+              <div class="form-group"><label>Calorieën</label><input type="number" id="manual-cal" placeholder="0" min="0"></div>
+              <div class="form-group"><label>Eiwit (g)</label><input type="number" id="manual-prot" placeholder="0" min="0" step="0.1"></div>
+            </div>
+            <div class="form-row" style="margin-bottom:.75rem;">
+              <div class="form-group"><label>Koolhydraten (g)</label><input type="number" id="manual-carb" placeholder="0" min="0" step="0.1"></div>
+              <div class="form-group"><label>Vetten (g)</label><input type="number" id="manual-fat" placeholder="0" min="0" step="0.1"></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-secondary btn-sm" id="manual-add-once">Alleen toevoegen</button>
+              <button class="btn btn-primary btn-sm" id="manual-add-save">Toevoegen & opslaan in database</button>
+            </div>
+          </div>
+
+          <!-- Maaltijdnaam -->
+          <div class="form-group" style="margin-top:.625rem;">
+            <label>Naam maaltijd</label>
+            <input type="text" id="meal-desc" placeholder="bijv. Ontbijt, Lunch thuis...">
+          </div>
+        </div>
+
+        <!-- TAB: FAVORIETEN -->
+        <div class="tab-panel" id="tab-favorieten">
+          <div id="fav-list"></div>
+          <div class="empty" id="fav-empty" style="display:none;">Nog geen favorieten opgeslagen.<br><span style="font-size:12px;">Gebruik de ☆ knop na het samenstellen van een maaltijd.</span></div>
+        </div>
+
+        <!-- MACRO PREVIEW -->
+        <div class="macro-preview" id="macro-preview">
+          <div class="macro-preview-item"><div class="mv cal" id="prev-cal">0</div><div class="ml">kcal</div></div>
+          <div class="macro-preview-item"><div class="mv prot" id="prev-prot">0</div><div class="ml">eiwit g</div></div>
+          <div class="macro-preview-item"><div class="mv carb" id="prev-carb">0</div><div class="ml">koolh g</div></div>
+          <div class="macro-preview-item"><div class="mv fat" id="prev-fat">0</div><div class="ml">vet g</div></div>
+        </div>
+
+        <div id="meal-alert" style="display:none;"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary" id="meal-fav-btn" style="flex:0 0 auto;">☆ Favoriet</button>
+          <button class="btn btn-primary" id="meal-save" style="flex:1;">Maaltijd opslaan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUIKER + INSULINE -->
+    <div>
+      <div class="section-header">
+        <div class="section-title">Suiker & Insuline</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Bloedsuiker (Dexcom G7)</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Waarde (mmol/L)</label>
+            <input type="number" id="sugar-val" placeholder="bijv. 6.5" min="1" max="30" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>Moment</label>
+            <select id="sugar-moment">
+              <option>Voor maaltijd</option>
+              <option>Na maaltijd</option>
+              <option>Nuchter</option>
+              <option>Voor slapen</option>
+              <option>Nacht</option>
+              <option>Anders</option>
+            </select>
+          </div>
+        </div>
+        <div id="sugar-alert" style="display:none;"></div>
+        <button class="btn btn-secondary" id="sugar-save" style="width:100%;margin-bottom:.75rem;">Suiker opslaan</button>
+
+        <div class="card-title" style="margin-top:.5rem;">Insuline (Omnipod)</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Eenheden</label>
+            <input type="number" id="insulin-units" placeholder="bijv. 4" min="0" step="0.5">
+          </div>
+          <div class="form-group">
+            <label>Type</label>
+            <select id="insulin-type">
+              <option>Bolus (maaltijd)</option>
+              <option>Correctie bolus</option>
+              <option>Basaal aanpassing</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-secondary" id="insulin-save" style="width:100%;">Insuline opslaan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPORT -->
+  <div class="section-header">
+    <div class="section-title">Beweging & Sport</div>
+  </div>
+  <div class="card">
+    <div class="form-row">
+      <div class="form-group" style="flex:2;">
+        <label>Activiteit</label>
+        <input type="text" id="sport-desc" placeholder="bijv. hardlopen, fietsen, krachttraining">
+      </div>
+      <div class="form-group">
+        <label>Duur (min)</label>
+        <input type="number" id="sport-dur" placeholder="30" min="1">
+      </div>
+      <div class="form-group">
+        <label>Intensiteit</label>
+        <select id="sport-int">
+          <option>Laag</option>
+          <option>Matig</option>
+          <option>Hoog</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-secondary" id="sport-save">Activiteit opslaan</button>
+  </div>
+
+</div>
+
+<!-- PAGE: DASHBOARD -->
+<div class="page" id="page-dashboard">
+
+  <div class="section-header">
+    <div class="section-title">Vandaag</div>
+    <div style="font-size:12px;color:var(--muted);" id="dash-date"></div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-box"><div class="label">Calorieën</div><div class="val cal" id="d-cal">0</div></div>
+    <div class="stat-box"><div class="label">Eiwit (g)</div><div class="val prot" id="d-prot">0</div></div>
+    <div class="stat-box"><div class="label">Koolhydraten (g)</div><div class="val carb" id="d-carb">0</div></div>
+    <div class="stat-box"><div class="label">Vetten (g)</div><div class="val fat" id="d-fat">0</div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="stat-box" style="text-align:left;padding:1rem;">
+      <div class="label" style="margin-bottom:.5rem;">Laatste bloedsuiker</div>
+      <div style="display:flex;align-items:center;">
+        <div class="val sugar" id="d-sugar-val">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-left:6px;">mmol/L</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="d-sugar-label"></div>
+    </div>
+    <div class="stat-box" style="text-align:left;padding:1rem;">
+      <div class="label" style="margin-bottom:.5rem;">Insuline vandaag</div>
+      <div style="display:flex;align-items:center;">
+        <div class="val insulin" id="d-insulin-total">0</div>
+        <div style="font-size:12px;color:var(--muted);margin-left:6px;">eenheden</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="d-insulin-label">totaal bolus</div>
+    </div>
+  </div>
+
+  <!-- MACRO VERDELING -->
+  <div class="card" style="margin-top:1rem;">
+    <div class="card-title">Macro verdeling vandaag</div>
+    <div class="macro-bar" id="macro-bar">
+      <div class="macro-bar-seg" style="background:var(--accent2);width:33%"></div>
+      <div class="macro-bar-seg" style="background:var(--warning);width:33%"></div>
+      <div class="macro-bar-seg" style="background:var(--accent3);width:34%"></div>
+    </div>
+    <div style="display:flex;gap:16px;font-size:12px;margin-top:6px;">
+      <span style="color:var(--accent2);">■ Eiwit</span>
+      <span style="color:var(--warning);">■ Koolh</span>
+      <span style="color:var(--accent3);">■ Vetten</span>
+    </div>
+  </div>
+
+  <!-- RECENTE MAALTIJDEN -->
+  <div class="section-header" style="margin-top:1.25rem;">
+    <div class="section-title">Recente maaltijden</div>
+  </div>
+  <div id="dash-meals"></div>
+
+  <!-- RECENTE SUIKER -->
+  <div class="section-header" style="margin-top:1rem;">
+    <div class="section-title">Bloedsuiker vandaag</div>
+  </div>
+  <div id="dash-sugars"></div>
+
+</div>
+
+<!-- PAGE: LOGBOEK -->
+<div class="page" id="page-logboek">
+  <div class="section-header">
+    <div class="section-title">Logboek</div>
+    <button class="btn btn-danger btn-sm" id="clear-log">Alles wissen</button>
+  </div>
+  <div id="log-filter" style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+    <button class="btn btn-secondary btn-sm active-filter" data-filter="all">Alles</button>
+    <button class="btn btn-secondary btn-sm" data-filter="meal">Maaltijden</button>
+    <button class="btn btn-secondary btn-sm" data-filter="sugar">Bloedsuiker</button>
+    <button class="btn btn-secondary btn-sm" data-filter="insulin">Insuline</button>
+    <button class="btn btn-secondary btn-sm" data-filter="sport">Sport</button>
+  </div>
+  <div id="log-entries"></div>
+</div>
+
+<!-- PAGE: INSTELLINGEN -->
+<div class="page" id="page-instellingen">
+  <div class="section-title" style="margin-bottom:1rem;">Herinneringen</div>
+  <div class="card">
+    <div class="card-title">Vaste maaltijdtijden</div>
+    <div id="reminders-list"></div>
+    <button class="btn btn-secondary btn-sm" id="add-reminder" style="margin-top:8px;">+ Herinnering toevoegen</button>
+    <div class="alert alert-info" style="margin-top:1rem;">
+      Herinneringen werken als browsermeldingen. Zorg dat je meldingen toestaat voor deze pagina.
+    </div>
+    <button class="btn btn-primary" id="save-reminders" style="margin-top:.75rem;">Opslaan</button>
+  </div>
+
+  <div class="section-title" style="margin-bottom:1rem;margin-top:1.5rem;">Doelen</div>
+  <div class="card">
+    <div class="card-title">Dagelijkse doelen</div>
+    <div class="form-row">
+      <div class="form-group"><label>Calorieën doel</label><input type="number" id="goal-cal" placeholder="2000"></div>
+      <div class="form-group"><label>Eiwit doel (g)</label><input type="number" id="goal-prot" placeholder="100"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Koolhydraten doel (g)</label><input type="number" id="goal-carb" placeholder="250"></div>
+      <div class="form-group"><label>Vetten doel (g)</label><input type="number" id="goal-fat" placeholder="70"></div>
+    </div>
+    <div class="card-title" style="margin-top:.75rem;">Bloedsuiker streefwaarden</div>
+    <div class="form-row">
+      <div class="form-group"><label>Laag (mmol/L)</label><input type="number" id="sugar-low" placeholder="3.9" step="0.1"></div>
+      <div class="form-group"><label>Hoog (mmol/L)</label><input type="number" id="sugar-high" placeholder="10.0" step="0.1"></div>
+    </div>
+    <button class="btn btn-primary" id="save-goals" style="margin-top:.75rem;">Doelen opslaan</button>
+  </div>
+
+  <div class="section-title" style="margin-bottom:1rem;margin-top:1.5rem;">Data</div>
+  <div class="card">
+    <div class="card-title">Export & beheer</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-secondary" id="export-btn">Exporteer als JSON</button>
+      <button class="btn btn-danger" id="reset-btn">Alle data wissen</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, deleteDoc, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ─── FIREBASE INIT ────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyDDOvupQGz0InwLj3hHjVjDdx_KYQeugW8",
+  authDomain: "dt1-tracker.firebaseapp.com",
+  projectId: "dt1-tracker",
+  storageBucket: "dt1-tracker.firebasestorage.app",
+  messagingSenderId: "105746886312",
+  appId: "1:105746886312:web:3271952c919dc58f599c9d"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+// Voor nu één gebruiker (later login toevoegen)
+const USER_ID = 'gebruiker1';
+
+// ─── STATE ───────────────────────────────────────────────
+var STATE = {
+  entries: [],
+  goals: { cal: 2000, prot: 100, carb: 250, fat: 70, sugarLow: 3.9, sugarHigh: 10.0 },
+  reminders: [],
+  favorites: [],
+  customFoods: []
+};
+
+// ─── FIREBASE SAVE/LOAD ───────────────────────────────────
+async function saveSettings() {
+  try {
+    await setDoc(doc(db, 'gebruikers', USER_ID), {
+      goals: STATE.goals,
+      reminders: STATE.reminders,
+      favorites: STATE.favorites,
+      customFoods: STATE.customFoods || []
+    });
+  } catch(e) { console.error('Settings opslaan mislukt:', e); }
+}
+
+async function loadSettings() {
+  try {
+    const snap = await getDoc(doc(db, 'gebruikers', USER_ID));
+    if(snap.exists()) {
+      const d = snap.data();
+      STATE.goals      = d.goals      || STATE.goals;
+      STATE.reminders  = d.reminders  || [];
+      STATE.favorites  = d.favorites  || [];
+      STATE.customFoods= d.customFoods|| [];
+    }
+  } catch(e) { console.error('Settings laden mislukt:', e); }
+}
+
+async function saveEntry(entry) {
+  try {
+    const ref = await addDoc(collection(db, 'gebruikers', USER_ID, 'entries'), entry);
+    entry.id = ref.id;
+    STATE.entries.push(entry);
+  } catch(e) { console.error('Entry opslaan mislukt:', e); }
+}
+
+async function deleteEntry(id) {
+  try {
+    await deleteDoc(doc(db, 'gebruikers', USER_ID, 'entries', id));
+    STATE.entries = STATE.entries.filter(function(e){ return e.id !== id; });
+  } catch(e) { console.error('Entry verwijderen mislukt:', e); }
+}
+
+async function loadEntries() {
+  try {
+    const q = query(collection(db, 'gebruikers', USER_ID, 'entries'), orderBy('ts', 'desc'));
+    const snap = await getDocs(q);
+    STATE.entries = [];
+    snap.forEach(function(d){ STATE.entries.push(Object.assign({ id: d.id }, d.data())); });
+  } catch(e) { console.error('Entries laden mislukt:', e); }
+}
+
+// Legacy localStorage save (ook lokaal bewaren als fallback)
+function save() {
+  saveSettings();
+  try { localStorage.setItem('gz_backup', JSON.stringify({goals:STATE.goals,reminders:STATE.reminders,favorites:STATE.favorites})); } catch(e){}
+}
+
+// Toon sync status
+function setSyncStatus(status) {
+  var el = document.getElementById('sync-status');
+  if(!el) return;
+  if(status==='ok')      { el.textContent='● gesynchroniseerd'; el.style.color='var(--success)'; }
+  if(status==='saving')  { el.textContent='● opslaan...';       el.style.color='var(--warning)'; }
+  if(status==='error')   { el.textContent='● offline';          el.style.color='var(--danger)'; }
+}
+
+// ─── INIT APP NA FIREBASE LOAD ────────────────────────────
+async function initApp() {
+  setSyncStatus('saving');
+  document.getElementById('loading-overlay').style.display='flex';
+  try {
+    await loadSettings();
+    await loadEntries();
+    setSyncStatus('ok');
+  } catch(e) {
+    setSyncStatus('error');
+  }
+  document.getElementById('loading-overlay').style.display='none';
+  loadGoals();
+  renderReminders();
+  renderDashboard();
+}
+
+initApp();
+
+// ─── TIME ─────────────────────────────────────────────────
+function pad(n){ return String(n).padStart(2,'0'); }
+function timeStr(d){ d=d||new Date(); return pad(d.getHours())+':'+pad(d.getMinutes()); }
+function dateStr(d){ d=d||new Date(); return d.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'}); }
+function fullTs(d){ d=d||new Date(); return d.toISOString(); }
+function displayTs(iso){
+  var d=new Date(iso);
+  return pad(d.getHours())+':'+pad(d.getMinutes())+' · '+d.toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+}
+function isToday(iso){
+  var d=new Date(iso), t=new Date();
+  return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear();
+}
+
+setInterval(function(){
+  document.getElementById('nav-time').textContent = timeStr();
+  checkReminders();
+}, 10000);
+document.getElementById('nav-time').textContent = timeStr();
+
+// ─── NAV ──────────────────────────────────────────────────
+document.querySelectorAll('.nav-tab').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.nav-tab').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('page-'+btn.dataset.page).classList.add('active');
+    if(btn.dataset.page==='dashboard') renderDashboard();
+    if(btn.dataset.page==='logboek') renderLog();
+  });
+});
+
+// ─── ALERT HELPERS ────────────────────────────────────────
+function showAlert(id, msg, type){
+  var el=document.getElementById(id);
+  el.className='alert alert-'+type;
+  el.textContent=msg;
+  el.style.display='block';
+  setTimeout(function(){ el.style.display='none'; }, 3500);
+}
+
+// ─── MAALTIJD BUILDER ─────────────────────────────────────
+
+// Uitgebreide voedingsdatabase (per 100g tenzij anders vermeld)
+var FOOD_DB = [
+  // Vlees & vis
+  {n:'Kipfilet (100g)',         cal:110, prot:23,  carb:0,   fat:1.2, unit:'g',  std:100},
+  {n:'Kipfilet (gebakken, 100g)',cal:165,prot:31,  carb:0,   fat:3.6, unit:'g',  std:100},
+  {n:'Rundergehakt (100g)',     cal:254, prot:17,  carb:0,   fat:20,  unit:'g',  std:100},
+  {n:'Zalm (100g)',             cal:208, prot:20,  carb:0,   fat:13,  unit:'g',  std:100},
+  {n:'Tonijn (blik, 100g)',     cal:116, prot:26,  carb:0,   fat:1,   unit:'g',  std:100},
+  {n:'Kabeljauw (100g)',        cal:82,  prot:18,  carb:0,   fat:0.7, unit:'g',  std:100},
+  {n:'Ei (1 stuk)',             cal:78,  prot:6.3, carb:0.6, fat:5.3, unit:'st', std:1},
+  {n:'Eiwitten (100g)',         cal:52,  prot:11,  carb:0.7, fat:0.2, unit:'g',  std:100},
+  // Zuivel
+  {n:'Volle melk (100ml)',      cal:61,  prot:3.2, carb:4.8, fat:3.5, unit:'ml', std:100},
+  {n:'Halfvolle melk (100ml)',  cal:46,  prot:3.3, carb:4.8, fat:1.6, unit:'ml', std:100},
+  {n:'Griekse yoghurt (100g)',  cal:97,  prot:9,   carb:3.6, fat:5,   unit:'g',  std:100},
+  {n:'Magere kwark (100g)',     cal:57,  prot:11,  carb:3.5, fat:0.2, unit:'g',  std:100},
+  {n:'Cheddar kaas (100g)',     cal:403, prot:25,  carb:1.3, fat:33,  unit:'g',  std:100},
+  {n:'Gouda kaas (100g)',       cal:356, prot:25,  carb:2.2, fat:27,  unit:'g',  std:100},
+  {n:'Cottage cheese (100g)',   cal:98,  prot:11,  carb:3.4, fat:4.3, unit:'g',  std:100},
+  // Granen & brood
+  {n:'Volkoren brood (1 snee)', cal:80,  prot:3.5, carb:13,  fat:1.2, unit:'st', std:1},
+  {n:'Wit brood (1 snee)',      cal:79,  prot:2.7, carb:15,  fat:1,   unit:'st', std:1},
+  {n:'Havermout droog (100g)',  cal:379, prot:13,  carb:68,  fat:7,   unit:'g',  std:100},
+  {n:'Havermout gekookt (100g)',cal:71,  prot:2.5, carb:12,  fat:1.4, unit:'g',  std:100},
+  {n:'Gekookte pasta (100g)',   cal:131, prot:5,   carb:25,  fat:1.1, unit:'g',  std:100},
+  {n:'Gekookte rijst (100g)',   cal:130, prot:2.7, carb:28,  fat:0.3, unit:'g',  std:100},
+  {n:'Zilvervliesrijst (100g)', cal:111, prot:2.6, carb:23,  fat:0.9, unit:'g',  std:100},
+  {n:'Aardappel gekookt (100g)',cal:77,  prot:2,   carb:17,  fat:0.1, unit:'g',  std:100},
+  {n:'Zoete aardappel (100g)',  cal:86,  prot:1.6, carb:20,  fat:0.1, unit:'g',  std:100},
+  {n:'Volkoren crackers (1 st)',cal:38,  prot:1,   carb:6.5, fat:1,   unit:'st', std:1},
+  {n:'Wrap (1 st)',             cal:210, prot:6,   carb:35,  fat:5,   unit:'st', std:1},
+  // Groenten
+  {n:'Broccoli (100g)',         cal:34,  prot:2.8, carb:7,   fat:0.4, unit:'g',  std:100},
+  {n:'Spinazie (100g)',         cal:23,  prot:2.9, carb:3.6, fat:0.4, unit:'g',  std:100},
+  {n:'Tomaat (100g)',           cal:18,  prot:0.9, carb:3.9, fat:0.2, unit:'g',  std:100},
+  {n:'Komkommer (100g)',        cal:16,  prot:0.7, carb:3.6, fat:0.1, unit:'g',  std:100},
+  {n:'Paprika (100g)',          cal:31,  prot:1,   carb:6,   fat:0.3, unit:'g',  std:100},
+  {n:'Wortel (100g)',           cal:41,  prot:0.9, carb:10,  fat:0.2, unit:'g',  std:100},
+  {n:'Sla (100g)',              cal:15,  prot:1.4, carb:2.2, fat:0.2, unit:'g',  std:100},
+  {n:'Avocado (100g)',          cal:160, prot:2,   carb:9,   fat:15,  unit:'g',  std:100},
+  {n:'Ui (100g)',               cal:40,  prot:1.1, carb:9.3, fat:0.1, unit:'g',  std:100},
+  {n:'Knoflook (1 teen)',       cal:5,   prot:0.2, carb:1,   fat:0,   unit:'st', std:1},
+  // Fruit
+  {n:'Banaan (1 st)',           cal:89,  prot:1.1, carb:23,  fat:0.3, unit:'st', std:1},
+  {n:'Appel (1 st)',            cal:95,  prot:0.5, carb:25,  fat:0.3, unit:'st', std:1},
+  {n:'Sinaasappel (1 st)',      cal:62,  prot:1.2, carb:15,  fat:0.2, unit:'st', std:1},
+  {n:'Aardbei (100g)',          cal:33,  prot:0.7, carb:8,   fat:0.3, unit:'g',  std:100},
+  {n:'Bosvruchten (100g)',      cal:57,  prot:1.4, carb:13,  fat:0.5, unit:'g',  std:100},
+  {n:'Druiven (100g)',          cal:69,  prot:0.7, carb:18,  fat:0.2, unit:'g',  std:100},
+  // Noten & zaden
+  {n:'Amandelen (100g)',        cal:579, prot:21,  carb:22,  fat:50,  unit:'g',  std:100},
+  {n:'Walnoten (100g)',         cal:654, prot:15,  carb:14,  fat:65,  unit:'g',  std:100},
+  {n:'Pindakaas (100g)',        cal:588, prot:25,  carb:20,  fat:50,  unit:'g',  std:100},
+  {n:'Chiazaad (100g)',         cal:486, prot:17,  carb:42,  fat:31,  unit:'g',  std:100},
+  {n:'Lijnzaad (100g)',         cal:534, prot:18,  carb:29,  fat:42,  unit:'g',  std:100},
+  // Dranken
+  {n:'Koffie zwart (250ml)',    cal:5,   prot:0.3, carb:0,   fat:0,   unit:'ml', std:250},
+  {n:'Volle melk koffie (250ml)',cal:92, prot:4,   carb:6,   fat:5,   unit:'ml', std:250},
+  {n:'Sinaasappelsap (200ml)',  cal:88,  prot:1.3, carb:21,  fat:0.2, unit:'ml', std:200},
+  {n:'Groene thee (250ml)',     cal:3,   prot:0,   carb:0,   fat:0,   unit:'ml', std:250},
+  // Sauzen & extra
+  {n:'Olijfolie (1 el)',        cal:119, prot:0,   carb:0,   fat:14,  unit:'el', std:1},
+  {n:'Boter (1 el)',            cal:102, prot:0.1, carb:0,   fat:11,  unit:'el', std:1},
+  {n:'Hummus (100g)',           cal:166, prot:8,   carb:14,  fat:10,  unit:'g',  std:100},
+  {n:'Honing (1 el)',           cal:64,  prot:0.1, carb:17,  fat:0,   unit:'el', std:1},
+  {n:'Suiker (1 tl)',           cal:16,  prot:0,   carb:4,   fat:0,   unit:'tl', std:1},
+  {n:'Proteïneshake (1 portie)',cal:120, prot:25,  carb:5,   fat:2,   unit:'st', std:1},
+  // Snacks
+  {n:'Rijstwafels (1 st)',      cal:35,  prot:0.7, carb:7.5, fat:0.3, unit:'st', std:1},
+  {n:'Donkere chocolade (100g)',cal:546, prot:5,   carb:60,  fat:31,  unit:'g',  std:100},
+  {n:'Chips (100g)',            cal:536, prot:7,   carb:53,  fat:35,  unit:'g',  std:100},
+];
+
+if(!STATE.favorites) STATE.favorites = [];
+if(!STATE.customFoods) STATE.customFoods = [];
+var currentIngredients = [];
+var activeTab = 'invoer';
+
+// Merge built-in + custom foods
+function getAllFoods() {
+  return FOOD_DB.concat(STATE.customFoods || []);
+}
+
+// ─── TABS ─────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+    btn.classList.add('active');
+    activeTab = btn.dataset.tab;
+    document.getElementById('tab-'+activeTab).classList.add('active');
+    if(activeTab==='favorieten') renderFavorites();
+    updatePreview();
+  });
+});
+
+// ─── SEARCH ───────────────────────────────────────────────
+var searchEl  = document.getElementById('food-search');
+var resultsEl = document.getElementById('search-results');
+var manualPanel = document.getElementById('manual-add-panel');
+
+searchEl.addEventListener('input', function(){
+  var q = searchEl.value.trim().toLowerCase();
+  manualPanel.style.display = 'none';
+  if(q.length < 1){ resultsEl.style.display='none'; return; }
+
+  var all = getAllFoods();
+  var matches = all.filter(function(f){ return f.n.toLowerCase().indexOf(q) >= 0; }).slice(0,10);
+
+  var html = matches.map(function(f){
+    var idx = all.indexOf(f);
+    var tag = STATE.customFoods && STATE.customFoods.indexOf(f) >= 0
+      ? '<span style="font-size:10px;background:rgba(79,142,247,0.15);color:var(--accent);padding:1px 6px;border-radius:4px;margin-left:5px;">eigen</span>' : '';
+    return '<div class="search-item" data-fi="'+idx+'">' +
+      '<span class="search-item-name">'+f.n+tag+'</span>' +
+      '<span class="search-item-meta">'+f.cal+' kcal · '+f.prot+'g eiwit</span>' +
+    '</div>';
+  }).join('');
+
+  // Always append "Zelf toevoegen" option at bottom
+  html += '<div class="search-item" id="manual-trigger" style="border-top:1px solid var(--border2);color:var(--accent);">' +
+    '<span class="search-item-name">+ "'+searchEl.value+'" zelf toevoegen</span>' +
+    '<span class="search-item-meta">handmatig</span>' +
+  '</div>';
+
+  resultsEl.innerHTML = html;
+  resultsEl.style.display = 'block';
+
+  resultsEl.querySelectorAll('.search-item').forEach(function(item){
+    if(item.id === 'manual-trigger'){
+      item.addEventListener('click', function(){
+        document.getElementById('manual-name').value = searchEl.value;
+        manualPanel.style.display = 'block';
+        resultsEl.style.display = 'none';
+        searchEl.value = '';
+        document.getElementById('manual-cal').focus();
+      });
+    } else {
+      item.addEventListener('click', function(){
+        var all2 = getAllFoods();
+        var f = all2[parseInt(item.dataset.fi)];
+        addIngredient(f);
+        searchEl.value = '';
+        resultsEl.style.display = 'none';
+      });
+    }
+  });
+});
+
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.search-wrap') && !e.target.closest('#manual-add-panel'))
+    resultsEl.style.display='none';
+});
+
+// ─── HANDMATIG TOEVOEGEN ──────────────────────────────────
+function getManualFood() {
+  var name = document.getElementById('manual-name').value.trim();
+  var cal  = parseFloat(document.getElementById('manual-cal').value)||0;
+  var prot = parseFloat(document.getElementById('manual-prot').value)||0;
+  var carb = parseFloat(document.getElementById('manual-carb').value)||0;
+  var fat  = parseFloat(document.getElementById('manual-fat').value)||0;
+  if(!name) return null;
+  return { n:name, cal:cal, prot:prot, carb:carb, fat:fat, unit:'portie', std:1, custom:true };
+}
+
+function clearManualPanel() {
+  ['manual-name','manual-cal','manual-prot','manual-carb','manual-fat'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
+  manualPanel.style.display='none';
+}
+
+document.getElementById('manual-add-once').addEventListener('click', function(){
+  var f = getManualFood();
+  if(!f){ return; }
+  addIngredient(f);
+  clearManualPanel();
+});
+
+document.getElementById('manual-add-save').addEventListener('click', function(){
+  var f = getManualFood();
+  if(!f){ return; }
+  if(!STATE.customFoods) STATE.customFoods=[];
+  // Avoid duplicates
+  var exists = STATE.customFoods.some(function(x){ return x.n.toLowerCase()===f.n.toLowerCase(); });
+  if(!exists){ STATE.customFoods.push(f); save(); }
+  addIngredient(f);
+  clearManualPanel();
+  showAlert('meal-alert', '"'+f.n+'" opgeslagen in jouw database!', 'success');
+});
+
+// ─── INGREDIËNTEN ─────────────────────────────────────────
+function addIngredient(food) {
+  currentIngredients.push({ food:food, qty:food.std });
+  renderIngredients();
+  updatePreview();
+  if(!document.getElementById('meal-desc').value)
+    document.getElementById('meal-desc').value = document.getElementById('meal-type').value;
+}
+
+function renderIngredients(){
+  var el = document.getElementById('ingredients-list');
+  if(!currentIngredients.length){ el.innerHTML=''; return; }
+  el.innerHTML = currentIngredients.map(function(item, i){
+    var step = (item.food.unit==='g'||item.food.unit==='ml') ? 5 : 0.5;
+    return '<div class="ingredient-row">' +
+      '<span class="ingredient-name">'+item.food.n+'</span>' +
+      '<input type="number" value="'+item.qty+'" min="0" step="'+step+'" data-ii="'+i+'" class="ing-qty">' +
+      '<span class="ingredient-unit">'+item.food.unit+'</span>' +
+      '<button class="btn btn-danger btn-sm ing-del" data-ii="'+i+'">✕</button>' +
+    '</div>';
+  }).join('');
+  el.querySelectorAll('.ing-qty').forEach(function(inp){
+    inp.addEventListener('input', function(){
+      currentIngredients[parseInt(inp.dataset.ii)].qty = parseFloat(inp.value)||0;
+      updatePreview();
+    });
+  });
+  el.querySelectorAll('.ing-del').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      currentIngredients.splice(parseInt(btn.dataset.ii),1);
+      renderIngredients(); updatePreview();
+    });
+  });
+}
+
+function calcMacros(ingredients) {
+  var cal=0,prot=0,carb=0,fat=0;
+  ingredients.forEach(function(item){
+    var ratio = item.food.std > 0 ? item.qty / item.food.std : 1;
+    cal  += item.food.cal  * ratio;
+    prot += item.food.prot * ratio;
+    carb += item.food.carb * ratio;
+    fat  += item.food.fat  * ratio;
+  });
+  return {
+    cal:  Math.round(cal),
+    prot: Math.round(prot*10)/10,
+    carb: Math.round(carb*10)/10,
+    fat:  Math.round(fat*10)/10
+  };
+}
+
+function updatePreview(){
+  var m = calcMacros(currentIngredients);
+  document.getElementById('prev-cal').textContent  = m.cal;
+  document.getElementById('prev-prot').textContent = m.prot;
+  document.getElementById('prev-carb').textContent = m.carb;
+  document.getElementById('prev-fat').textContent  = m.fat;
+}
+
+// ─── FAVORIETEN ───────────────────────────────────────────
+function renderFavorites(){
+  var el = document.getElementById('fav-list');
+  var emEl = document.getElementById('fav-empty');
+  if(!STATE.favorites || !STATE.favorites.length){
+    el.innerHTML=''; emEl.style.display='block'; return;
+  }
+  emEl.style.display='none';
+  el.innerHTML = STATE.favorites.map(function(fav, i){
+    return '<div class="fav-item">' +
+      '<div style="flex:1;">' +
+        '<div class="fav-name">'+fav.desc+'</div>' +
+        '<div class="fav-meta">'+fav.cal+' kcal · '+fav.prot+'g eiwit · '+fav.carb+'g koolh · '+fav.fat+'g vet</div>' +
+      '</div>' +
+      '<button class="btn btn-secondary btn-sm fav-load" data-fi="'+i+'">Laden</button>' +
+      '<button class="btn btn-danger btn-sm fav-del" data-fi="'+i+'">✕</button>' +
+    '</div>';
+  }).join('');
+
+  el.querySelectorAll('.fav-load').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var fav = STATE.favorites[parseInt(btn.dataset.fi)];
+      // Load as a single ingredient entry with fixed macros
+      currentIngredients = [{ food:{ n:fav.desc, cal:fav.cal, prot:fav.prot, carb:fav.carb, fat:fav.fat, unit:'portie', std:1 }, qty:1 }];
+      document.getElementById('meal-desc').value = fav.desc;
+      // switch to invoer tab
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+      document.querySelector('[data-tab="invoer"]').classList.add('active');
+      document.getElementById('tab-invoer').classList.add('active');
+      activeTab = 'invoer';
+      renderIngredients(); updatePreview();
+    });
+  });
+  el.querySelectorAll('.fav-del').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      STATE.favorites.splice(parseInt(btn.dataset.fi),1);
+      save(); renderFavorites();
+    });
+  });
+}
+
+document.getElementById('meal-fav-btn').addEventListener('click', function(){
+  var m = getMealData();
+  if(!m){ showAlert('meal-alert','Voeg eerst ingrediënten toe.','danger'); return; }
+  if(!STATE.favorites) STATE.favorites=[];
+  STATE.favorites.push(m);
+  save();
+  document.getElementById('meal-fav-btn').textContent='★ Opgeslagen!';
+  setTimeout(function(){ document.getElementById('meal-fav-btn').textContent='☆ Favoriet'; },2000);
+});
+
+function getMealData(){
+  if(!currentIngredients.length) return null;
+  var desc = document.getElementById('meal-desc').value.trim() || document.getElementById('meal-type').value;
+  var m = calcMacros(currentIngredients);
+  return { desc:desc, cal:m.cal, prot:m.prot, carb:m.carb, fat:m.fat };
+}
+
+// ─── MAALTIJD OPSLAAN ─────────────────────────────────────
+document.getElementById('meal-save').addEventListener('click', async function(){
+  var m = getMealData();
+  if(!m){ showAlert('meal-alert','Voeg minimaal één ingrediënt of product toe.','danger'); return; }
+  var type = document.getElementById('meal-type').value;
+  var entry = { kind:'meal', ts:fullTs(), desc:m.desc, type:type, cal:m.cal, prot:m.prot, carb:m.carb, fat:m.fat };
+  setSyncStatus('saving');
+  await saveEntry(entry);
+  setSyncStatus('ok');
+  showAlert('meal-alert','Maaltijd opgeslagen!','success');
+  currentIngredients=[];
+  renderIngredients(); updatePreview();
+  document.getElementById('meal-desc').value='';
+});
+
+// ─── SUIKER ───────────────────────────────────────────────
+document.getElementById('sugar-save').addEventListener('click', async function(){
+  var val = parseFloat(document.getElementById('sugar-val').value);
+  var moment = document.getElementById('sugar-moment').value;
+  if(!val||val<1||val>30){ showAlert('sugar-alert','Vul een geldige suikerwaarde in (1–30 mmol/L).','danger'); return; }
+  setSyncStatus('saving');
+  await saveEntry({ kind:'sugar', ts:fullTs(), val:val, moment:moment });
+  setSyncStatus('ok');
+  showAlert('sugar-alert','Bloedsuiker opgeslagen!','success');
+  document.getElementById('sugar-val').value='';
+});
+
+// ─── INSULINE ─────────────────────────────────────────────
+document.getElementById('insulin-save').addEventListener('click', async function(){
+  var units = parseFloat(document.getElementById('insulin-units').value);
+  var type  = document.getElementById('insulin-type').value;
+  if(!units||units<=0){ return; }
+  setSyncStatus('saving');
+  await saveEntry({ kind:'insulin', ts:fullTs(), units:units, type:type });
+  setSyncStatus('ok');
+  document.getElementById('insulin-units').value='';
+  var el=document.getElementById('sugar-alert');
+  el.className='alert alert-success'; el.textContent='Insuline opgeslagen!'; el.style.display='block';
+  setTimeout(function(){ el.style.display='none'; },2500);
+});
+
+// ─── SPORT ────────────────────────────────────────────────
+document.getElementById('sport-save').addEventListener('click', async function(){
+  var desc = document.getElementById('sport-desc').value.trim();
+  var dur  = parseInt(document.getElementById('sport-dur').value)||0;
+  var int_ = document.getElementById('sport-int').value;
+  if(!desc){ return; }
+  setSyncStatus('saving');
+  await saveEntry({ kind:'sport', ts:fullTs(), desc:desc, dur:dur, intensity:int_ });
+  setSyncStatus('ok');
+  document.getElementById('sport-desc').value='';
+  document.getElementById('sport-dur').value='';
+});
+
+// ─── DASHBOARD ────────────────────────────────────────────
+function renderDashboard(){
+  document.getElementById('dash-date').textContent = dateStr();
+  var today = STATE.entries.filter(function(e){ return isToday(e.ts); });
+
+  var cal=0,prot=0,carb=0,fat=0;
+  today.filter(function(e){return e.kind==='meal';}).forEach(function(e){
+    cal+=e.cal; prot+=e.prot; carb+=e.carb; fat+=e.fat;
+  });
+  document.getElementById('d-cal').textContent  = Math.round(cal);
+  document.getElementById('d-prot').textContent = Math.round(prot*10)/10;
+  document.getElementById('d-carb').textContent = Math.round(carb*10)/10;
+  document.getElementById('d-fat').textContent  = Math.round(fat*10)/10;
+
+  // macro bar
+  var total = prot+carb+fat;
+  if(total>0){
+    var pp=Math.round(prot/total*100), cp=Math.round(carb/total*100), fp=100-pp-cp;
+    var bar=document.getElementById('macro-bar');
+    bar.children[0].style.width=pp+'%';
+    bar.children[1].style.width=cp+'%';
+    bar.children[2].style.width=fp+'%';
+  }
+
+  // suiker
+  var sugars = today.filter(function(e){return e.kind==='sugar';});
+  var lastSugar = sugars[sugars.length-1];
+  if(lastSugar){
+    var sv = lastSugar.val;
+    var el = document.getElementById('d-sugar-val');
+    el.textContent = sv;
+    var low=STATE.goals.sugarLow||3.9, high=STATE.goals.sugarHigh||10;
+    el.style.color = sv < low ? 'var(--danger)' : sv > high ? 'var(--warning)' : 'var(--success)';
+    document.getElementById('d-sugar-label').textContent = lastSugar.moment + ' · ' + displayTs(lastSugar.ts);
+  } else {
+    document.getElementById('d-sugar-val').textContent='—';
+    document.getElementById('d-sugar-label').textContent='Nog geen meting vandaag';
+  }
+
+  // insuline totaal
+  var insulinTotal = today.filter(function(e){return e.kind==='insulin';}).reduce(function(s,e){return s+e.units;},0);
+  document.getElementById('d-insulin-total').textContent = Math.round(insulinTotal*10)/10;
+
+  // maaltijden
+  var meals = today.filter(function(e){return e.kind==='meal';}).slice().reverse();
+  var mealEl = document.getElementById('dash-meals');
+  if(!meals.length){ mealEl.innerHTML='<div class="empty">Nog geen maaltijden vandaag.</div>'; }
+  else {
+    mealEl.innerHTML = meals.map(function(e){
+      return '<div class="log-entry entry-meal">' +
+        '<div style="flex:1;">' +
+          '<div class="type-tag">' + e.type + '</div>' +
+          '<div class="desc">' + e.desc + '</div>' +
+          '<div>' +
+            '<span class="pill pill-cal">' + e.cal + ' kcal</span>' +
+            '<span class="pill pill-prot">' + e.prot + 'g eiwit</span>' +
+            '<span class="pill pill-carb">' + e.carb + 'g koolh</span>' +
+            '<span class="pill pill-fat">' + e.fat + 'g vet</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="time-badge">' + displayTs(e.ts) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // suiker lijst
+  var sugarEl = document.getElementById('dash-sugars');
+  if(!sugars.length){ sugarEl.innerHTML='<div class="empty">Nog geen metingen vandaag.</div>'; }
+  else {
+    var low2=STATE.goals.sugarLow||3.9, high2=STATE.goals.sugarHigh||10;
+    sugarEl.innerHTML = sugars.slice().reverse().map(function(e){
+      var col = e.val<low2?'var(--danger)':e.val>high2?'var(--warning)':'var(--success)';
+      var lbl = e.val<low2?'Te laag':e.val>high2?'Te hoog':'In range';
+      return '<div class="log-entry entry-sugar">' +
+        '<div style="flex:1;">' +
+          '<div class="type-tag">' + e.moment + '</div>' +
+          '<div class="desc" style="color:'+col+';">' + e.val + ' mmol/L <span style="font-size:12px;font-weight:400;color:var(--muted);">— ' + lbl + '</span></div>' +
+        '</div>' +
+        '<div class="time-badge">' + displayTs(e.ts) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+}
+
+// ─── LOGBOEK ──────────────────────────────────────────────
+var activeFilter = 'all';
+document.querySelectorAll('#log-filter button').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    activeFilter = btn.dataset.filter;
+    document.querySelectorAll('#log-filter button').forEach(function(b){ b.classList.remove('active-filter'); b.style.borderColor=''; b.style.color=''; });
+    btn.classList.add('active-filter'); btn.style.borderColor='var(--accent)'; btn.style.color='var(--accent)';
+    renderLog();
+  });
+});
+
+document.getElementById('clear-log').addEventListener('click', async function(){
+  if(confirm('Weet je zeker dat je alle entries wilt verwijderen?')){
+    setSyncStatus('saving');
+    for(var i=0; i<STATE.entries.length; i++){
+      if(STATE.entries[i].id) await deleteEntry(STATE.entries[i].id);
+    }
+    STATE.entries=[];
+    setSyncStatus('ok');
+    renderLog();
+  }
+});
+
+function renderLog(){
+  var filtered = STATE.entries.filter(function(e){
+    return activeFilter==='all' || e.kind===activeFilter;
+  }).slice().reverse();
+
+  var el=document.getElementById('log-entries');
+  if(!filtered.length){ el.innerHTML='<div class="empty">Geen entries gevonden.</div>'; return; }
+
+  el.innerHTML = filtered.map(function(e,i){
+    var idx = STATE.entries.indexOf(e);
+    var content='', cls='';
+    if(e.kind==='meal'){
+      cls='entry-meal';
+      content='<div class="type-tag">'+e.type+'</div><div class="desc">'+e.desc+'</div>'+
+        '<div><span class="pill pill-cal">'+e.cal+' kcal</span>'+
+        '<span class="pill pill-prot">'+e.prot+'g eiwit</span>'+
+        '<span class="pill pill-carb">'+e.carb+'g koolh</span>'+
+        '<span class="pill pill-fat">'+e.fat+'g vet</span></div>';
+    } else if(e.kind==='sugar'){
+      cls='entry-sugar';
+      var low=STATE.goals.sugarLow||3.9, high=STATE.goals.sugarHigh||10;
+      var col=e.val<low?'var(--danger)':e.val>high?'var(--warning)':'var(--success)';
+      content='<div class="type-tag">Bloedsuiker · '+e.moment+'</div>'+
+        '<div class="desc" style="color:'+col+';">'+e.val+' mmol/L</div>';
+    } else if(e.kind==='insulin'){
+      cls='entry-insulin';
+      content='<div class="type-tag">Insuline · '+e.type+'</div>'+
+        '<div class="desc">'+e.units+' eenheden</div>';
+    } else if(e.kind==='sport'){
+      cls='entry-sport';
+      content='<div class="type-tag">Sport · '+e.intensity+'</div>'+
+        '<div class="desc">'+e.desc+(e.dur?' · '+e.dur+' min':'')+'</div>';
+    }
+    return '<div class="log-entry '+cls+'">' +
+      '<div style="flex:1;">'+content+'</div>' +
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">' +
+        '<div class="time-badge">'+displayTs(e.ts)+'</div>' +
+        '<button class="btn btn-danger btn-sm del-btn" data-idx="'+e.id+'">✕</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  document.querySelectorAll('.del-btn').forEach(function(btn){
+    btn.addEventListener('click', async function(){
+      var id = btn.dataset.idx;
+      setSyncStatus('saving');
+      await deleteEntry(id);
+      setSyncStatus('ok');
+      renderLog();
+      renderDashboard();
+    });
+  });
+}
+
+// ─── INSTELLINGEN ─────────────────────────────────────────
+function loadGoals(){
+  document.getElementById('goal-cal').value   = STATE.goals.cal||'';
+  document.getElementById('goal-prot').value  = STATE.goals.prot||'';
+  document.getElementById('goal-carb').value  = STATE.goals.carb||'';
+  document.getElementById('goal-fat').value   = STATE.goals.fat||'';
+  document.getElementById('sugar-low').value  = STATE.goals.sugarLow||'';
+  document.getElementById('sugar-high').value = STATE.goals.sugarHigh||'';
+}
+loadGoals();
+
+document.getElementById('save-goals').addEventListener('click', function(){
+  STATE.goals.cal       = parseFloat(document.getElementById('goal-cal').value)||2000;
+  STATE.goals.prot      = parseFloat(document.getElementById('goal-prot').value)||100;
+  STATE.goals.carb      = parseFloat(document.getElementById('goal-carb').value)||250;
+  STATE.goals.fat       = parseFloat(document.getElementById('goal-fat').value)||70;
+  STATE.goals.sugarLow  = parseFloat(document.getElementById('sugar-low').value)||3.9;
+  STATE.goals.sugarHigh = parseFloat(document.getElementById('sugar-high').value)||10.0;
+  save();
+  showAlert('meal-alert','Doelen opgeslagen!','success');
+});
+
+// ─── HERINNERINGEN ────────────────────────────────────────
+
+function renderReminders(){
+  var el=document.getElementById('reminders-list');
+  if(!STATE.reminders.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted);margin-bottom:.5rem;">Nog geen herinneringen.</div>'; return; }
+  el.innerHTML = STATE.reminders.map(function(r,i){
+    return '<div class="reminder-row">' +
+      '<label class="toggle"><input type="checkbox" '+(r.on?'checked':'')+' data-ri="'+i+'" class="rem-toggle"><span class="toggle-slider"></span></label>' +
+      '<input type="time" value="'+r.time+'" data-ri="'+i+'" class="rem-time" style="max-width:110px;">' +
+      '<input type="text" value="'+r.label+'" data-ri="'+i+'" class="rem-label" placeholder="Omschrijving" style="flex:1;">' +
+      '<button class="btn btn-danger btn-sm rem-del" data-ri="'+i+'">✕</button>' +
+    '</div>';
+  }).join('');
+
+  document.querySelectorAll('.rem-toggle').forEach(function(c){
+    c.addEventListener('change', function(){ STATE.reminders[+c.dataset.ri].on=c.checked; });
+  });
+  document.querySelectorAll('.rem-time').forEach(function(inp){
+    inp.addEventListener('change', function(){ STATE.reminders[+inp.dataset.ri].time=inp.value; });
+  });
+  document.querySelectorAll('.rem-label').forEach(function(inp){
+    inp.addEventListener('input', function(){ STATE.reminders[+inp.dataset.ri].label=inp.value; });
+  });
+  document.querySelectorAll('.rem-del').forEach(function(btn){
+    btn.addEventListener('click', function(){ STATE.reminders.splice(+btn.dataset.ri,1); renderReminders(); });
+  });
+}
+renderReminders();
+
+document.getElementById('add-reminder').addEventListener('click', function(){
+  STATE.reminders.push({ time:'08:00', label:'Ontbijt', on:true });
+  renderReminders();
+});
+document.getElementById('save-reminders').addEventListener('click', function(){
+  save();
+  if(Notification.permission==='default') Notification.requestPermission();
+  alert('Herinneringen opgeslagen!');
+});
+
+function checkReminders(){
+  if(!STATE.reminders) return;
+  var now=timeStr();
+  STATE.reminders.forEach(function(r){
+    if(r.on && r.time===now){
+      if(Notification.permission==='granted'){
+        new Notification('Gezondheid tracker', { body: r.label+' — tijd om je maaltijd in te voeren!', icon:'' });
+      }
+      var banner=document.getElementById('meal-reminder');
+      banner.style.display='flex';
+      document.getElementById('reminder-time-label').textContent = r.label + ' · ' + r.time;
+    }
+  });
+}
+
+// ─── EXPORT ───────────────────────────────────────────────
+document.getElementById('export-btn').addEventListener('click', function(){
+  var blob=new Blob([JSON.stringify(STATE,null,2)],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='gezondheid-data-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+});
+document.getElementById('reset-btn').addEventListener('click', async function(){
+  if(confirm('Alle data permanent wissen? Dit kan niet ongedaan worden gemaakt.')){
+    setSyncStatus('saving');
+    for(var i=0; i<STATE.entries.length; i++){
+      if(STATE.entries[i].id) await deleteEntry(STATE.entries[i].id);
+    }
+    STATE.entries=[];
+    setSyncStatus('ok');
+    renderLog();
+    renderDashboard();
+  }
+});
+
+// init
+renderDashboard();
+</script>
+</body>
+</html>
