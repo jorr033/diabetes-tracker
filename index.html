@@ -268,8 +268,10 @@
     <button class="nav-tab" data-page="logboek">Logboek</button>
     <button class="nav-tab" data-page="instellingen">Instellingen</button>
   </div>
-  <div style="display:flex;align-items:center;gap:12px;">
+  <div style="display:flex;align-items:center;gap:10px;">
     <div id="sync-status" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">● laden...</div>
+    <div id="nav-user" style="font-size:12px;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+    <button class="btn btn-secondary" id="logout-btn" style="font-size:11px;padding:4px 10px;display:none;">Uitloggen</button>
     <div class="nav-time" id="nav-time"></div>
   </div>
 </nav>
@@ -279,6 +281,24 @@
   <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--accent);margin-bottom:12px;">● gezondheid</div>
   <div style="font-size:13px;color:var(--muted);">Data laden uit de cloud...</div>
 </div>
+
+<!-- LOGIN SCHERM -->
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;z-index:998;padding:2rem;">
+  <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--accent);margin-bottom:8px;">● gezondheid</div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:2rem;text-align:center;">Persoonlijke diabetes & voeding tracker</div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;width:100%;max-width:360px;text-align:center;">
+    <div style="font-size:16px;font-weight:500;margin-bottom:.5rem;">Inloggen</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:1.5rem;">Log in met je Google account om door te gaan</div>
+    <button class="btn btn-primary" id="login-google-btn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.7 13 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-9.9 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7L2.5 13.3A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.6l8.3-5.9z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.1 0-11.3-3.5-13.2-8.7l-8.3 5.9C6.9 42.6 14.8 48 24 48z"/></svg>
+      Inloggen met Google
+    </button>
+    <div id="login-error" style="display:none;margin-top:1rem;font-size:12px;color:var(--danger);"></div>
+  </div>
+</div>
+
+<!-- APP CONTENT -->
+<div id="app-content" style="display:none;">
 
 <!-- PAGE: INVOER -->
 <div class="page active" id="page-invoer">
@@ -570,6 +590,16 @@
     <button class="btn btn-primary" id="save-goals" style="margin-top:.75rem;">Doelen opslaan</button>
   </div>
 
+  <div class="section-title" style="margin-bottom:1rem;margin-top:1.5rem;">Account</div>
+  <div class="card">
+    <div class="card-title">Jouw account</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:.5rem;">Jouw gebruikers-ID (UID):</div>
+    <div id="user-uid" style="font-family:'DM Mono',monospace;font-size:12px;background:var(--bg3);padding:8px 12px;border-radius:var(--radius-sm);word-break:break-all;margin-bottom:.75rem;border:1px solid var(--border2);"></div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;">Stuur deze UID naar de ontwikkelaar om als admin ingesteld te worden.</div>
+    <button class="btn btn-secondary btn-sm" id="copy-uid-btn">Kopieer UID</button>
+    <button class="btn btn-danger" id="logout-btn2" style="margin-left:8px;">Uitloggen</button>
+  </div>
+
   <div class="section-title" style="margin-bottom:1rem;margin-top:1.5rem;">Data</div>
   <div class="card">
     <div class="card-title">Export & beheer</div>
@@ -580,9 +610,12 @@
   </div>
 </div>
 
+</div> <!-- einde app-content -->
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, deleteDoc, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 // ─── FIREBASE INIT ────────────────────────────────────────
 const firebaseConfig = {
@@ -594,10 +627,17 @@ const firebaseConfig = {
   appId: "1:105746886312:web:3271952c919dc58f599c9d"
 };
 const fbApp = initializeApp(firebaseConfig);
-const db = getFirestore(fbApp);
+const db    = getFirestore(fbApp);
+const auth  = getAuth(fbApp);
+const provider = new GoogleAuthProvider();
 
-// Voor nu één gebruiker (later login toevoegen)
-const USER_ID = 'gebruiker1';
+// ─── ADMIN ────────────────────────────────────────────────
+// Jouw UID wordt hier ingesteld zodra je hem doorgeeft
+// Voor nu: eerste ingelogde gebruiker krijgt altijd toegang
+// en ziet zijn UID in de instellingen om door te geven
+var ADMIN_UID = null; // wordt ingesteld zodra je UID bekend is
+var currentUser = null;
+var USER_ID = null;
 
 // ─── STATE ───────────────────────────────────────────────
 var STATE = {
@@ -610,6 +650,7 @@ var STATE = {
 
 // ─── FIREBASE SAVE/LOAD ───────────────────────────────────
 async function saveSettings() {
+  if(!USER_ID) return;
   try {
     await setDoc(doc(db, 'gebruikers', USER_ID), {
       goals: STATE.goals,
@@ -621,19 +662,21 @@ async function saveSettings() {
 }
 
 async function loadSettings() {
+  if(!USER_ID) return;
   try {
     const snap = await getDoc(doc(db, 'gebruikers', USER_ID));
     if(snap.exists()) {
       const d = snap.data();
-      STATE.goals      = d.goals      || STATE.goals;
-      STATE.reminders  = d.reminders  || [];
-      STATE.favorites  = d.favorites  || [];
-      STATE.customFoods= d.customFoods|| [];
+      STATE.goals       = d.goals       || STATE.goals;
+      STATE.reminders   = d.reminders   || [];
+      STATE.favorites   = d.favorites   || [];
+      STATE.customFoods = d.customFoods || [];
     }
   } catch(e) { console.error('Settings laden mislukt:', e); }
 }
 
 async function saveEntry(entry) {
+  if(!USER_ID) return;
   try {
     const ref = await addDoc(collection(db, 'gebruikers', USER_ID, 'entries'), entry);
     entry.id = ref.id;
@@ -642,6 +685,7 @@ async function saveEntry(entry) {
 }
 
 async function deleteEntry(id) {
+  if(!USER_ID) return;
   try {
     await deleteDoc(doc(db, 'gebruikers', USER_ID, 'entries', id));
     STATE.entries = STATE.entries.filter(function(e){ return e.id !== id; });
@@ -649,6 +693,7 @@ async function deleteEntry(id) {
 }
 
 async function loadEntries() {
+  if(!USER_ID) return;
   try {
     const q = query(collection(db, 'gebruikers', USER_ID, 'entries'), orderBy('ts', 'desc'));
     const snap = await getDocs(q);
@@ -657,39 +702,87 @@ async function loadEntries() {
   } catch(e) { console.error('Entries laden mislukt:', e); }
 }
 
-// Legacy localStorage save (ook lokaal bewaren als fallback)
 function save() {
   saveSettings();
   try { localStorage.setItem('gz_backup', JSON.stringify({goals:STATE.goals,reminders:STATE.reminders,favorites:STATE.favorites})); } catch(e){}
 }
 
-// Toon sync status
+// ─── SYNC STATUS ──────────────────────────────────────────
 function setSyncStatus(status) {
   var el = document.getElementById('sync-status');
   if(!el) return;
   if(status==='ok')      { el.textContent='● gesynchroniseerd'; el.style.color='var(--success)'; }
   if(status==='saving')  { el.textContent='● opslaan...';       el.style.color='var(--warning)'; }
   if(status==='error')   { el.textContent='● offline';          el.style.color='var(--danger)'; }
+  if(status==='uitgelogd'){ el.textContent='● niet ingelogd';   el.style.color='var(--muted)'; }
 }
 
-// ─── INIT APP NA FIREBASE LOAD ────────────────────────────
-async function initApp() {
-  setSyncStatus('saving');
-  document.getElementById('loading-overlay').style.display='flex';
-  try {
-    await loadSettings();
-    await loadEntries();
-    setSyncStatus('ok');
-  } catch(e) {
-    setSyncStatus('error');
-  }
+// ─── LOGIN SCHERM ─────────────────────────────────────────
+function showLoginScreen() {
   document.getElementById('loading-overlay').style.display='none';
-  loadGoals();
-  renderReminders();
-  renderDashboard();
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app-content').style.display='none';
+  setSyncStatus('uitgelogd');
 }
 
-initApp();
+function showApp() {
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-content').style.display='block';
+}
+
+document.getElementById('login-google-btn').addEventListener('click', async function(){
+  try {
+    await signInWithPopup(auth, provider);
+  } catch(e) {
+    document.getElementById('login-error').textContent = 'Inloggen mislukt: '+e.message;
+    document.getElementById('login-error').style.display='block';
+  }
+});
+
+document.getElementById('logout-btn').addEventListener('click', async function(){
+  await signOut(auth);
+});
+
+// ─── AUTH STATE ───────────────────────────────────────────
+onAuthStateChanged(auth, async function(user) {
+  if(user) {
+    currentUser = user;
+    USER_ID = user.uid;
+
+    // Toon gebruikersinfo in nav
+    document.getElementById('nav-user').textContent = user.displayName || user.email;
+
+    // Toon UID in instellingen (zodat je hem kunt doorgeven)
+    var uidEl = document.getElementById('user-uid');
+    if(uidEl) {
+      uidEl.textContent = user.uid;
+      uidEl.style.display = 'block';
+    }
+
+    showApp();
+    document.getElementById('logout-btn').style.display='block';
+    setSyncStatus('saving');
+    document.getElementById('loading-overlay').style.display='flex';
+
+    try {
+      await loadSettings();
+      await loadEntries();
+      setSyncStatus('ok');
+    } catch(e) {
+      setSyncStatus('error');
+    }
+
+    document.getElementById('loading-overlay').style.display='none';
+    loadGoals();
+    renderReminders();
+    renderDashboard();
+
+  } else {
+    currentUser = null;
+    USER_ID = null;
+    showLoginScreen();
+  }
+});
 
 // ─── TIME ─────────────────────────────────────────────────
 function pad(n){ return String(n).padStart(2,'0'); }
@@ -1524,6 +1617,18 @@ function checkReminders(){
     }
   });
 }
+
+// ─── ACCOUNT KNOPPEN ──────────────────────────────────────
+document.getElementById('copy-uid-btn').addEventListener('click', function(){
+  var uid = document.getElementById('user-uid').textContent;
+  navigator.clipboard.writeText(uid).then(function(){
+    document.getElementById('copy-uid-btn').textContent = 'Gekopieerd!';
+    setTimeout(function(){ document.getElementById('copy-uid-btn').textContent = 'Kopieer UID'; }, 2000);
+  });
+});
+document.getElementById('logout-btn2').addEventListener('click', async function(){
+  await signOut(auth);
+});
 
 // ─── EXPORT ───────────────────────────────────────────────
 document.getElementById('export-btn').addEventListener('click', function(){
