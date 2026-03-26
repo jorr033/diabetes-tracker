@@ -593,6 +593,10 @@
   <div class="section-title" style="margin-bottom:1rem;margin-top:1.5rem;">Account</div>
   <div class="card">
     <div class="card-title">Jouw account</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:.75rem;">
+      <div id="nav-user-settings" style="font-size:14px;font-weight:500;"></div>
+      <span id="admin-badge" style="display:none;font-size:10px;background:rgba(79,142,247,0.2);color:var(--accent);padding:2px 8px;border-radius:999px;font-weight:500;">★ Admin</span>
+    </div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:.5rem;">Jouw gebruikers-ID (UID):</div>
     <div id="user-uid" style="font-family:'DM Mono',monospace;font-size:12px;background:var(--bg3);padding:8px 12px;border-radius:var(--radius-sm);word-break:break-all;margin-bottom:.75rem;border:1px solid var(--border2);"></div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;">Stuur deze UID naar de ontwikkelaar om als admin ingesteld te worden.</div>
@@ -632,12 +636,14 @@ const auth  = getAuth(fbApp);
 const provider = new GoogleAuthProvider();
 
 // ─── ADMIN ────────────────────────────────────────────────
-// Jouw UID wordt hier ingesteld zodra je hem doorgeeft
-// Voor nu: eerste ingelogde gebruiker krijgt altijd toegang
-// en ziet zijn UID in de instellingen om door te geven
-var ADMIN_UID = null; // wordt ingesteld zodra je UID bekend is
+// Permanente admin — kan nooit worden verwijderd
+var ADMIN_UID = 'LUb6etKG2Sf7fqSTGRCUEcoC6pK2';
 var currentUser = null;
 var USER_ID = null;
+
+function isAdmin() {
+  return USER_ID === ADMIN_UID;
+}
 
 // ─── STATE ───────────────────────────────────────────────
 var STATE = {
@@ -749,15 +755,18 @@ onAuthStateChanged(auth, async function(user) {
     currentUser = user;
     USER_ID = user.uid;
 
-    // Toon gebruikersinfo in nav
+    // Toon gebruikersinfo in nav en instellingen
     document.getElementById('nav-user').textContent = user.displayName || user.email;
+    var navUserSettings = document.getElementById('nav-user-settings');
+    if(navUserSettings) navUserSettings.textContent = user.displayName || user.email;
 
-    // Toon UID in instellingen (zodat je hem kunt doorgeven)
+    // Toon UID in instellingen
     var uidEl = document.getElementById('user-uid');
-    if(uidEl) {
-      uidEl.textContent = user.uid;
-      uidEl.style.display = 'block';
-    }
+    if(uidEl) uidEl.textContent = user.uid;
+
+    // Toon admin badge als het de admin is
+    var adminBadge = document.getElementById('admin-badge');
+    if(adminBadge) adminBadge.style.display = isAdmin() ? 'inline-block' : 'none';
 
     showApp();
     document.getElementById('logout-btn').style.display='block';
