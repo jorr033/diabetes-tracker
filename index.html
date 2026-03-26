@@ -640,6 +640,21 @@
   </div>
   <div id="dash-sugars"></div>
 
+  <!-- EXPORT -->
+  <div class="section-header" style="margin-top:1.25rem;">
+    <div class="section-title">Exporteren</div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:.875rem;">Exporteer de data uit de geselecteerde periode. Kies een bestandsformaat:</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-secondary" id="export-xlsx">📊 Excel (.xlsx)</button>
+      <button class="btn btn-secondary" id="export-csv">📄 CSV</button>
+      <button class="btn btn-secondary" id="export-json">{ } JSON</button>
+      <button class="btn btn-secondary" id="export-pdf-dash">📋 PDF rapport</button>
+    </div>
+    <div id="export-alert" style="display:none;margin-top:.75rem;"></div>
+  </div>
+
 </div>
 
 <!-- PAGE: LOGBOEK -->
@@ -2503,12 +2518,203 @@ document.getElementById('logout-btn2').addEventListener('click', async function(
   await signOut(auth);
 });
 
-// ─── EXPORT ───────────────────────────────────────────────
-document.getElementById('export-btn').addEventListener('click', function(){
-  var blob=new Blob([JSON.stringify(STATE,null,2)],{type:'application/json'});
+// ─── EXPORT (dashboard) ───────────────────────────────────
+function getExportEntries() {
+  // Gebruik de gefilterde entries van het dashboard
+  return getFilteredEntries();
+}
+
+function showExportAlert(msg, type) {
+  var al = document.getElementById('export-alert');
+  if(!al) return;
+  al.className='alert alert-'+type;
+  al.textContent=msg;
+  al.style.display='block';
+  setTimeout(function(){ al.style.display='none'; },3000);
+}
+
+function entryToRow(e) {
+  var datum = new Date(e.ts).toLocaleString('nl-NL');
+  if(e.kind==='meal')    return { Datum:datum, Type:'Maaltijd',    Categorie:e.type,     Omschrijving:e.desc,  'Calorieën':e.cal, 'Eiwit(g)':e.prot, 'Koolh(g)':e.carb, 'Vet(g)':e.fat, 'ml':'', 'mmol/L':'', 'Eenheden':'' };
+  if(e.kind==='drink')   return { Datum:datum, Type:'Drinken',     Categorie:e.drink,    Omschrijving:'',      'Calorieën':e.cal||0, 'Eiwit(g)':e.prot||0, 'Koolh(g)':e.carb||0, 'Vet(g)':e.fat||0, 'ml':e.ml, 'mmol/L':'', 'Eenheden':'' };
+  if(e.kind==='sugar')   return { Datum:datum, Type:'Bloedsuiker', Categorie:e.moment,   Omschrijving:'',      'Calorieën':'', 'Eiwit(g)':'', 'Koolh(g)':'', 'Vet(g)':'', 'ml':'', 'mmol/L':e.val, 'Eenheden':'' };
+  if(e.kind==='insulin') return { Datum:datum, Type:'Insuline',    Categorie:e.type,     Omschrijving:'',      'Calorieën':'', 'Eiwit(g)':'', 'Koolh(g)':'', 'Vet(g)':'', 'ml':'', 'mmol/L':'', 'Eenheden':e.units };
+  if(e.kind==='sport')   return { Datum:datum, Type:'Sport',       Categorie:e.intensity,Omschrijving:e.desc,  'Calorieën':e.burned||'', 'Eiwit(g)':'', 'Koolh(g)':'', 'Vet(g)':'', 'ml':'', 'mmol/L':'', 'Eenheden':'' };
+  return { Datum:datum, Type:e.kind, Categorie:'', Omschrijving:'', 'Calorieën':'', 'Eiwit(g)':'', 'Koolh(g)':'', 'Vet(g)':'', 'ml':'', 'mmol/L':'', 'Eenheden':'' };
+}
+
+// CSV export
+document.getElementById('export-csv').addEventListener('click', function(){
+  var entries = getExportEntries();
+  if(!entries.length){ showExportAlert('Geen data in geselecteerde periode.','danger'); return; }
+  var rows = entries.map(entryToRow);
+  var headers = Object.keys(rows[0]);
+  var csv = headers.join(';')+'\n';
+  csv += rows.map(function(r){ return headers.map(function(h){ return '"'+(r[h]||'').toString().replace(/"/g,'""')+'"'; }).join(';'); }).join('\n');
+  var bom = '\uFEFF'; // BOM voor Excel-compatibiliteit
+  var blob = new Blob([bom+csv], {type:'text/csv;charset=utf-8'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='gezondheid-data-'+new Date().toISOString().slice(0,10)+'.json';
+  a.download='gezondheid-'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
+  showExportAlert('CSV geëxporteerd!','success');
+});
+
+// JSON export
+document.getElementById('export-json').addEventListener('click', function(){
+  var entries = getExportEntries();
+  if(!entries.length){ showExportAlert('Geen data in geselecteerde periode.','danger'); return; }
+  var blob=new Blob([JSON.stringify({
+    exportDatum: new Date().toISOString(),
+    periode: dashPeriod,
+    entries: entries
+  },null,2)],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='gezondheid-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  showExportAlert('JSON geëxporteerd!','success');
+});
+
+// Excel export via SheetJS
+document.getElementById('export-xlsx').addEventListener('click', function(){
+  var entries = getExportEntries();
+  if(!entries.length){ showExportAlert('Geen data in geselecteerde periode.','danger'); return; }
+  showExportAlert('Excel wordt voorbereid...','info');
+
+  function doExcel(){
+    var rows = entries.map(entryToRow);
+    var ws = XLSX.utils.json_to_sheet(rows);
+
+    // Kolombreedte
+    ws['!cols'] = [
+      {wch:18},{wch:12},{wch:16},{wch:30},{wch:10},{wch:9},{wch:9},{wch:8},{wch:8},{wch:8},{wch:10}
+    ];
+
+    // Tweede sheet: samenvatting
+    var meals = entries.filter(function(e){return e.kind==='meal';});
+    var cal=0,prot=0,carb=0,fat=0;
+    meals.forEach(function(e){cal+=e.cal;prot+=e.prot;carb+=e.carb;fat+=e.fat;});
+    var water = entries.filter(function(e){return e.kind==='drink';}).reduce(function(s,e){return s+(e.ml||0);},0);
+    var insuline = entries.filter(function(e){return e.kind==='insulin';}).reduce(function(s,e){return s+e.units;},0);
+    var wsSummary = XLSX.utils.json_to_sheet([
+      {Metric:'Totaal calorieën', Waarde:Math.round(cal), Eenheid:'kcal'},
+      {Metric:'Totaal eiwit',     Waarde:Math.round(prot*10)/10, Eenheid:'g'},
+      {Metric:'Totaal koolhydraten', Waarde:Math.round(carb*10)/10, Eenheid:'g'},
+      {Metric:'Totaal vetten',    Waarde:Math.round(fat*10)/10, Eenheid:'g'},
+      {Metric:'Totaal vocht',     Waarde:water, Eenheid:'ml'},
+      {Metric:'Totaal insuline',  Waarde:Math.round(insuline*10)/10, Eenheid:'eenheden'},
+      {Metric:'Aantal maaltijden',Waarde:meals.length, Eenheid:''},
+      {Metric:'Aantal suikermetingen', Waarde:entries.filter(function(e){return e.kind==='sugar';}).length, Eenheid:''},
+    ]);
+    wsSummary['!cols'] = [{wch:24},{wch:10},{wch:10}];
+
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Samenvatting');
+    XLSX.utils.book_append_sheet(wb, ws, 'Alle data');
+    XLSX.writeFile(wb, 'gezondheid-'+new Date().toISOString().slice(0,10)+'.xlsx');
+    showExportAlert('Excel geëxporteerd!','success');
+  }
+
+  if(window.XLSX){ doExcel(); return; }
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+  s.onload = doExcel;
+  s.onerror = function(){ showExportAlert('SheetJS laden mislukt. Controleer je verbinding.','danger'); };
+  document.head.appendChild(s);
+});
+
+// PDF export
+document.getElementById('export-pdf-dash').addEventListener('click', function(){
+  var entries = getExportEntries();
+  if(!entries.length){ showExportAlert('Geen data in geselecteerde periode.','danger'); return; }
+  showExportAlert('PDF wordt voorbereid...','info');
+
+  function doPDF(){
+    var doc = new jspdf.jsPDF();
+    var y = 18;
+
+    // Header
+    doc.setFontSize(16); doc.setFont('helvetica','bold');
+    doc.text('Gezondheid Rapport', 14, y); y+=8;
+    doc.setFontSize(10); doc.setFont('helvetica','normal');
+    doc.setTextColor(120);
+    doc.text('Periode: '+dashPeriod+' · Geëxporteerd op '+new Date().toLocaleDateString('nl-NL'), 14, y); y+=10;
+    doc.setTextColor(0);
+
+    // Samenvatting
+    var meals = entries.filter(function(e){return e.kind==='meal';});
+    var cal=0,prot=0,carb=0,fat=0;
+    meals.forEach(function(e){cal+=e.cal;prot+=e.prot;carb+=e.carb;fat+=e.fat;});
+    var water=entries.filter(function(e){return e.kind==='drink';}).reduce(function(s,e){return s+(e.ml||0);},0);
+
+    doc.setFontSize(12); doc.setFont('helvetica','bold');
+    doc.text('Samenvatting', 14, y); y+=6;
+    doc.setFontSize(10); doc.setFont('helvetica','normal');
+    var summary = [
+      ['Calorieën', Math.round(cal)+' kcal'],
+      ['Eiwit', Math.round(prot*10)/10+'g'],
+      ['Koolhydraten', Math.round(carb*10)/10+'g'],
+      ['Vetten', Math.round(fat*10)/10+'g'],
+      ['Vocht', water+'ml'],
+      ['Maaltijden', meals.length+' stuks'],
+    ];
+    summary.forEach(function(row){
+      doc.text(row[0]+': '+row[1], 14, y); y+=5;
+    });
+    y+=4;
+
+    // Maaltijden tabel
+    doc.setFontSize(12); doc.setFont('helvetica','bold');
+    doc.text('Maaltijden', 14, y); y+=6;
+    doc.autoTable({
+      startY: y,
+      head: [['Datum','Type','Omschrijving','kcal','Eiwit','Koolh','Vet']],
+      body: meals.slice().reverse().map(function(e){
+        return [
+          new Date(e.ts).toLocaleDateString('nl-NL'),
+          e.type, e.desc,
+          Math.round(e.cal), Math.round(e.prot*10)/10+'g', Math.round(e.carb*10)/10+'g', Math.round(e.fat*10)/10+'g'
+        ];
+      }),
+      styles:{ fontSize:8, cellPadding:2 },
+      headStyles:{ fillColor:[30,35,51] },
+      margin:{ left:14, right:14 }
+    });
+    y = doc.lastAutoTable.finalY + 8;
+
+    // Bloedsuiker tabel
+    var sugars = entries.filter(function(e){return e.kind==='sugar';});
+    if(sugars.length){
+      doc.setFontSize(12); doc.setFont('helvetica','bold');
+      doc.text('Bloedsuiker', 14, y); y+=6;
+      doc.autoTable({
+        startY: y,
+        head: [['Datum','Moment','mmol/L','Status']],
+        body: sugars.slice().reverse().map(function(e){
+          var low=STATE.goals.sugarLow||3.9, high=STATE.goals.sugarHigh||10;
+          return [
+            new Date(e.ts).toLocaleDateString('nl-NL'),
+            e.moment, e.val,
+            e.val<low?'Te laag':e.val>high?'Te hoog':'In range'
+          ];
+        }),
+        styles:{ fontSize:8, cellPadding:2 },
+        headStyles:{ fillColor:[30,35,51] },
+        margin:{ left:14, right:14 }
+      });
+    }
+
+    doc.save('gezondheid-rapport-'+new Date().toISOString().slice(0,10)+'.pdf');
+    showExportAlert('PDF geëxporteerd!','success');
+  }
+
+  if(window.jspdf && window.jspdf.jsPDF){ doPDF(); return; }
+  // Laad jsPDF + autoTable
+  function loadScript(src, cb){
+    var s=document.createElement('script'); s.src=src; s.onload=cb; document.head.appendChild(s);
+  }
+  loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js', function(){
+    loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.29/dist/jspdf.plugin.autotable.min.js', doPDF);
+  });
 });
 document.getElementById('reset-btn').addEventListener('click', async function(){
   if(confirm('Alle data naar prullenbak verplaatsen? Je kunt ze binnen 7 dagen herstellen.')){
