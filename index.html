@@ -360,6 +360,7 @@
     <button class="nav-tab active" data-page="invoer">Invoer</button>
     <button class="nav-tab" data-page="dashboard">Dashboard</button>
     <button class="nav-tab" data-page="logboek">Logboek</button>
+    <button class="nav-tab" data-page="profiel">Profiel</button>
     <button class="nav-tab" data-page="instellingen">Instellingen</button>
     <button class="nav-tab" data-page="info">Info & FAQ</button>
   </div>
@@ -385,13 +386,13 @@
     <span class="bnav-icon">📋</span>
     <span>Logboek</span>
   </button>
+  <button class="bottom-nav-btn" data-page="profiel">
+    <span class="bnav-icon">👤</span>
+    <span>Profiel</span>
+  </button>
   <button class="bottom-nav-btn" data-page="instellingen">
     <span class="bnav-icon">⚙️</span>
     <span>Instellingen</span>
-  </button>
-  <button class="bottom-nav-btn" data-page="info">
-    <span class="bnav-icon">ℹ️</span>
-    <span>Info</span>
   </button>
 </div>
 
@@ -809,6 +810,20 @@
     <canvas id="water-chart" height="80"></canvas>
   </div>
 
+  <!-- BLOEDSUIKER GRAFIEK -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+      <div style="font-size:12px;color:var(--muted);">Bloedsuiker tijdlijn</div>
+      <div style="display:flex;gap:10px;font-size:11px;">
+        <span style="color:var(--danger);">■ Te laag</span>
+        <span style="color:var(--success);">■ In range</span>
+        <span style="color:var(--warning);">■ Te hoog</span>
+      </div>
+    </div>
+    <canvas id="sugar-chart" height="120"></canvas>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:.5rem;font-size:11px;color:var(--muted);" id="sugar-chart-stats"></div>
+  </div>
+
   <div class="grid2">
     <div class="stat-box" style="text-align:left;padding:1rem;">
       <div class="label" style="margin-bottom:.5rem;">Laatste bloedsuiker</div>
@@ -893,6 +908,94 @@
   <div id="log-entries"></div>
 </div>
 
+<!-- PAGE: PROFIEL -->
+<div class="page" id="page-profiel">
+  <div class="section-header">
+    <div class="section-title">Mijn profiel</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Persoonlijke gegevens</div>
+    <div class="form-row">
+      <div class="form-group"><label>Naam</label><input type="text" id="profile-name" placeholder="Jouw naam"></div>
+      <div class="form-group"><label>Geboortedatum</label><input type="date" id="profile-dob"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Geslacht</label>
+        <select id="profile-gender">
+          <option value="">— Kies —</option>
+          <option value="man">Man</option>
+          <option value="vrouw">Vrouw</option>
+          <option value="anders">Anders</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Gewicht (kg)</label><input type="number" id="profile-weight" placeholder="bijv. 75" min="20" max="300" step="0.1"></div>
+      <div class="form-group"><label>Lengte (cm)</label><input type="number" id="profile-height" placeholder="bijv. 175" min="100" max="250"></div>
+    </div>
+    <div id="profile-bmi" style="display:none;background:var(--bg3);border-radius:var(--radius-sm);padding:.75rem 1rem;margin:.75rem 0;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">BMI</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;" id="profile-bmi-val">—</div>
+        <div style="font-size:13px;" id="profile-bmi-label"></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="save-profile" style="margin-top:.5rem;">Profiel opslaan</button>
+    <div id="profile-alert" style="display:none;margin-top:.5rem;"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dagelijkse doelen</div>
+    <div class="form-row">
+      <div class="form-group"><label>Calorieën doel</label><input type="number" id="profile-goal-cal" placeholder="2000"></div>
+      <div class="form-group"><label>Eiwit doel (g)</label><input type="number" id="profile-goal-prot" placeholder="100"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Koolhydraten doel (g)</label><input type="number" id="profile-goal-carb" placeholder="250"></div>
+      <div class="form-group"><label>Vetten doel (g)</label><input type="number" id="profile-goal-fat" placeholder="70"></div>
+      <div class="form-group"><label>Vocht doel (ml)</label><input type="number" id="profile-goal-water" placeholder="2000"></div>
+    </div>
+    <div class="card-title" style="margin-top:.75rem;">Bloedsuiker streefwaarden</div>
+    <div class="form-row">
+      <div class="form-group"><label>Laag (mmol/L)</label><input type="number" id="profile-sugar-low" placeholder="3.9" step="0.1"></div>
+      <div class="form-group"><label>Hoog (mmol/L)</label><input type="number" id="profile-sugar-high" placeholder="10.0" step="0.1"></div>
+    </div>
+    <button class="btn btn-primary" id="save-profile-goals" style="margin-top:.75rem;">Doelen opslaan</button>
+    <div id="profile-goals-alert" style="display:none;margin-top:.5rem;"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Diabetes instellingen</div>
+    <div class="form-row">
+      <div class="form-group"><label>Type diabetes</label>
+        <select id="profile-diabetes-type">
+          <option value="dt1">Type 1</option>
+          <option value="dt2">Type 2</option>
+          <option value="lada">LADA</option>
+          <option value="anders">Anders</option>
+          <option value="geen">Geen diabetes</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Insulinepomp / CGM</label>
+        <select id="profile-device">
+          <option value="">— Geen —</option>
+          <option value="omnipod">Omnipod</option>
+          <option value="medtronic">Medtronic</option>
+          <option value="tandem">Tandem</option>
+          <option value="dexcom">Dexcom G7</option>
+          <option value="freestyle">FreeStyle Libre</option>
+          <option value="anders">Anders</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>KH ratio (g koolh per eenheid insuline)</label><input type="number" id="profile-kh-ratio" placeholder="bijv. 10" min="1" max="50" step="0.5"></div>
+      <div class="form-group"><label>Correctiefactor (mmol/L per eenheid)</label><input type="number" id="profile-correction" placeholder="bijv. 2.5" min="0.5" max="10" step="0.1"></div>
+    </div>
+    <button class="btn btn-primary" id="save-diabetes-settings" style="margin-top:.75rem;">Opslaan</button>
+    <div id="diabetes-alert" style="display:none;margin-top:.5rem;"></div>
+  </div>
+</div>
+
 <!-- PAGE: INSTELLINGEN -->
 <div class="page" id="page-instellingen">
   <div class="section-title" style="margin-bottom:1rem;">Herinneringen</div>
@@ -901,28 +1004,17 @@
     <div id="reminders-list"></div>
     <button class="btn btn-secondary btn-sm" id="add-reminder" style="margin-top:8px;">+ Herinnering toevoegen</button>
     <div class="alert alert-info" style="margin-top:1rem;">
-      Herinneringen werken als browsermeldingen. Zorg dat je meldingen toestaat voor deze pagina.
+      Herinneringen werken als browsermeldingen. Zorg dat je meldingen toestaat voor deze pagina. Let op: meldingen werken alleen wanneer de app open is in je browser.
     </div>
     <button class="btn btn-primary" id="save-reminders" style="margin-top:.75rem;">Opslaan</button>
   </div>
 
   <div class="section-title" style="margin-bottom:1rem;margin-top:1.5rem;">Doelen</div>
   <div class="card">
-    <div class="card-title">Dagelijkse doelen</div>
-    <div class="form-row">
-      <div class="form-group"><label>Calorieën doel</label><input type="number" id="goal-cal" placeholder="2000"></div>
-      <div class="form-group"><label>Eiwit doel (g)</label><input type="number" id="goal-prot" placeholder="100"></div>
+    <div class="alert alert-info" style="margin-bottom:.75rem;">
+      Doelen en persoonlijke gegevens kun je instellen via je <strong>Profiel</strong> pagina.
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>Koolhydraten doel (g)</label><input type="number" id="goal-carb" placeholder="250"></div>
-      <div class="form-group"><label>Vetten doel (g)</label><input type="number" id="goal-fat" placeholder="70"></div>
-    </div>
-    <div class="card-title" style="margin-top:.75rem;">Bloedsuiker streefwaarden</div>
-    <div class="form-row">
-      <div class="form-group"><label>Laag (mmol/L)</label><input type="number" id="sugar-low" placeholder="3.9" step="0.1"></div>
-      <div class="form-group"><label>Hoog (mmol/L)</label><input type="number" id="sugar-high" placeholder="10.0" step="0.1"></div>
-    </div>
-    <button class="btn btn-primary" id="save-goals" style="margin-top:.75rem;">Doelen opslaan</button>
+    <button class="btn btn-secondary" id="goto-profiel-btn" style="width:100%;">→ Naar Profiel & Doelen</button>
   </div>
 
   <div class="section-title" style="margin-bottom:1rem;margin-top:1.5rem;">Account</div>
@@ -1218,10 +1310,11 @@ function isAdmin() {
 // ─── STATE ───────────────────────────────────────────────
 var STATE = {
   entries: [],
-  goals: { cal: 2000, prot: 100, carb: 250, fat: 70, sugarLow: 3.9, sugarHigh: 10.0 },
+  goals: { cal: 2000, prot: 100, carb: 250, fat: 70, sugarLow: 3.9, sugarHigh: 10.0, waterGoal: 2000 },
   reminders: [],
   favorites: [],
-  customFoods: []
+  customFoods: [],
+  profile: { name:'', dob:'', gender:'', weight:'', height:'', diabetesType:'dt1', device:'', khRatio:'', correction:'' }
 };
 
 // ─── FIREBASE SAVE/LOAD ───────────────────────────────────
@@ -1232,7 +1325,8 @@ async function saveSettings() {
       goals: STATE.goals,
       reminders: STATE.reminders,
       favorites: STATE.favorites,
-      customFoods: STATE.customFoods || []
+      customFoods: STATE.customFoods || [],
+      profile: STATE.profile || {}
     });
   } catch(e) { console.error('Settings opslaan mislukt:', e); }
 }
@@ -1247,6 +1341,7 @@ async function loadSettings() {
       STATE.reminders   = d.reminders   || [];
       STATE.favorites   = d.favorites   || [];
       STATE.customFoods = d.customFoods || [];
+      STATE.profile     = d.profile     || STATE.profile;
     }
   } catch(e) { console.error('Settings laden mislukt:', e); }
 }
@@ -1572,6 +1667,7 @@ onAuthStateChanged(auth, async function(user) {
     renderDashboard();
     renderFAQ();
     initFeedbackAdmin();
+    loadProfile();
     setTimeout(function(){ showWelcomeModal(user); }, 300);
     setTimeout(showTip, 2000);
 
@@ -1638,6 +1734,7 @@ function setActivePage(page) {
   if(page==='dashboard') renderDashboard();
   if(page==='logboek') renderLog();
   if(page==='info') renderFAQ();
+  if(page==='profiel') loadProfile();
 }
 
 // Top nav clicks
@@ -2428,6 +2525,7 @@ function renderDashboard(){
   // Grafieken
   renderMacroChart(prot, carb, fat, goalProt, goalCarb, goalFat);
   renderWaterChart(waterTotal, waterGoal, drinks);
+  renderSugarChart(sugars);
 
   // suiker
   var sugars = filtered.filter(function(e){ return e.kind==='sugar'; });
@@ -2514,7 +2612,7 @@ document.getElementById('dash-save-goals').addEventListener('click', function(){
   al.style.display='block';
   setTimeout(function(){ al.style.display='none'; },2000);
   renderDashboard();
-  loadGoals();
+  loadProfile(); // sync profiel pagina
 });
 
 // ─── CHART.JS ─────────────────────────────────────────────
@@ -2628,7 +2726,102 @@ function renderWaterChart(waterTotal, waterGoal, drinks) {
   });
 }
 
-// ─── LOGBOEK ──────────────────────────────────────────────
+var sugarChartInst = null;
+
+function renderSugarChart(sugars) {
+  loadChartJS(function(){
+    var ctx = document.getElementById('sugar-chart');
+    if(!ctx) return;
+    if(sugarChartInst) sugarChartInst.destroy();
+
+    var low  = STATE.goals.sugarLow  || 3.9;
+    var high = STATE.goals.sugarHigh || 10.0;
+
+    var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var textColor = isDark ? '#eef0f5' : '#374151';
+    var gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+
+    if(!sugars.length) {
+      var statsEl = document.getElementById('sugar-chart-stats');
+      if(statsEl) statsEl.textContent = 'Geen metingen in deze periode.';
+      return;
+    }
+
+    var sorted = sugars.slice().sort(function(a,b){ return new Date(a.ts)-new Date(b.ts); });
+    var labels = sorted.map(function(s){
+      var d = new Date(s.ts);
+      return pad(d.getHours())+':'+pad(d.getMinutes());
+    });
+    var data = sorted.map(function(s){ return s.val; });
+    var pointColors = data.map(function(v){
+      return v < low ? '#f87171' : v > high ? '#fbbf24' : '#6ee7b7';
+    });
+
+    // Statistieken
+    var avg = Math.round(data.reduce(function(s,v){ return s+v; },0)/data.length*10)/10;
+    var inRange = data.filter(function(v){ return v>=low && v<=high; }).length;
+    var pctRange = Math.round(inRange/data.length*100);
+    var statsEl = document.getElementById('sugar-chart-stats');
+    if(statsEl) statsEl.innerHTML =
+      '<span>Gem: <strong style="color:var(--text);">'+avg+' mmol/L</strong></span>' +
+      '<span>In range: <strong style="color:var(--success);">'+pctRange+'%</strong> ('+inRange+'/'+data.length+')</span>' +
+      '<span>Min: <strong style="color:var(--danger);">'+Math.min.apply(null,data)+'</strong></span>' +
+      '<span>Max: <strong style="color:var(--warning);">'+Math.max.apply(null,data)+'</strong></span>';
+
+    sugarChartInst = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Bloedsuiker (mmol/L)',
+          data: data,
+          borderColor: '#a78bfa',
+          backgroundColor: 'rgba(167,139,250,0.08)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 5,
+          pointBackgroundColor: pointColors,
+          pointBorderColor: pointColors,
+        }]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode:'index', intersect:false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(c){
+                var v = c.raw;
+                var status = v<low?'⚠️ Te laag':v>high?'⚠️ Te hoog':'✓ In range';
+                return v+' mmol/L — '+status;
+              },
+              title: function(items){
+                var idx = items[0].dataIndex;
+                return sorted[idx].moment+' · '+labels[idx];
+              }
+            }
+          },
+          annotation: {
+            annotations: {
+              lowLine:  { type:'line', yMin:low,  yMax:low,  borderColor:'rgba(248,113,113,0.5)',  borderWidth:1, borderDash:[4,4] },
+              highLine: { type:'line', yMin:high, yMax:high, borderColor:'rgba(251,191,36,0.5)',   borderWidth:1, borderDash:[4,4] }
+            }
+          }
+        },
+        scales: {
+          x: { ticks:{color:textColor,font:{size:10}}, grid:{color:gridColor} },
+          y: {
+            ticks:{ color:textColor, font:{size:10}, callback:function(v){ return v+' mmol/L'; } },
+            grid:{ color:gridColor },
+            min: Math.max(0, Math.min.apply(null,data)-1),
+            suggestedMax: Math.max.apply(null,data)+1
+          }
+        }
+      }
+    });
+  });
+}
 var activeFilter = 'all';
 document.querySelectorAll('#log-filter button').forEach(function(btn){
   btn.addEventListener('click', function(){
@@ -2798,27 +2991,108 @@ function renderLog(){
   });
 }
 
-// ─── INSTELLINGEN ─────────────────────────────────────────
-function loadGoals(){
-  document.getElementById('goal-cal').value   = STATE.goals.cal||'';
-  document.getElementById('goal-prot').value  = STATE.goals.prot||'';
-  document.getElementById('goal-carb').value  = STATE.goals.carb||'';
-  document.getElementById('goal-fat').value   = STATE.goals.fat||'';
-  document.getElementById('sugar-low').value  = STATE.goals.sugarLow||'';
-  document.getElementById('sugar-high').value = STATE.goals.sugarHigh||'';
+// ─── PROFIEL ──────────────────────────────────────────────
+function loadProfile() {
+  var p = STATE.profile || {};
+  var g = STATE.goals || {};
+  // Persoonlijke gegevens
+  if(document.getElementById('profile-name'))       document.getElementById('profile-name').value       = p.name||'';
+  if(document.getElementById('profile-dob'))        document.getElementById('profile-dob').value        = p.dob||'';
+  if(document.getElementById('profile-gender'))     document.getElementById('profile-gender').value     = p.gender||'';
+  if(document.getElementById('profile-weight'))     document.getElementById('profile-weight').value     = p.weight||'';
+  if(document.getElementById('profile-height'))     document.getElementById('profile-height').value     = p.height||'';
+  if(document.getElementById('profile-diabetes-type')) document.getElementById('profile-diabetes-type').value = p.diabetesType||'dt1';
+  if(document.getElementById('profile-device'))     document.getElementById('profile-device').value     = p.device||'';
+  if(document.getElementById('profile-kh-ratio'))   document.getElementById('profile-kh-ratio').value   = p.khRatio||'';
+  if(document.getElementById('profile-correction')) document.getElementById('profile-correction').value = p.correction||'';
+  // Doelen
+  if(document.getElementById('profile-goal-cal'))   document.getElementById('profile-goal-cal').value   = g.cal||'';
+  if(document.getElementById('profile-goal-prot'))  document.getElementById('profile-goal-prot').value  = g.prot||'';
+  if(document.getElementById('profile-goal-carb'))  document.getElementById('profile-goal-carb').value  = g.carb||'';
+  if(document.getElementById('profile-goal-fat'))   document.getElementById('profile-goal-fat').value   = g.fat||'';
+  if(document.getElementById('profile-goal-water')) document.getElementById('profile-goal-water').value = g.waterGoal||2000;
+  if(document.getElementById('profile-sugar-low'))  document.getElementById('profile-sugar-low').value  = g.sugarLow||'';
+  if(document.getElementById('profile-sugar-high')) document.getElementById('profile-sugar-high').value = g.sugarHigh||'';
+  updateBMI();
 }
-loadGoals();
 
-document.getElementById('save-goals').addEventListener('click', function(){
-  STATE.goals.cal       = parseFloat(document.getElementById('goal-cal').value)||2000;
-  STATE.goals.prot      = parseFloat(document.getElementById('goal-prot').value)||100;
-  STATE.goals.carb      = parseFloat(document.getElementById('goal-carb').value)||250;
-  STATE.goals.fat       = parseFloat(document.getElementById('goal-fat').value)||70;
-  STATE.goals.sugarLow  = parseFloat(document.getElementById('sugar-low').value)||3.9;
-  STATE.goals.sugarHigh = parseFloat(document.getElementById('sugar-high').value)||10.0;
-  save();
-  showAlert('meal-alert','Doelen opgeslagen!','success');
+function updateBMI() {
+  var w = parseFloat(document.getElementById('profile-weight') ? document.getElementById('profile-weight').value : 0);
+  var h = parseFloat(document.getElementById('profile-height') ? document.getElementById('profile-height').value : 0);
+  var bmiEl = document.getElementById('profile-bmi');
+  var bmiVal = document.getElementById('profile-bmi-val');
+  var bmiLbl = document.getElementById('profile-bmi-label');
+  if(!bmiEl||!w||!h) { if(bmiEl) bmiEl.style.display='none'; return; }
+  var bmi = Math.round((w / ((h/100)*(h/100)))*10)/10;
+  var label='', color='';
+  if(bmi<18.5)      { label='Ondergewicht'; color='var(--accent)'; }
+  else if(bmi<25)   { label='Normaal gewicht'; color='var(--success)'; }
+  else if(bmi<30)   { label='Overgewicht'; color='var(--warning)'; }
+  else              { label='Obesitas'; color='var(--danger)'; }
+  bmiVal.textContent = bmi;
+  bmiVal.style.color = color;
+  bmiLbl.textContent = label;
+  bmiLbl.style.color = color;
+  bmiEl.style.display = 'block';
+}
+
+// BMI live bijwerken
+['profile-weight','profile-height'].forEach(function(id){
+  var el = document.getElementById(id);
+  if(el) el.addEventListener('input', updateBMI);
 });
+
+// Profiel opslaan
+var saveProfileBtn = document.getElementById('save-profile');
+if(saveProfileBtn) saveProfileBtn.addEventListener('click', function(){
+  STATE.profile.name   = document.getElementById('profile-name').value.trim();
+  STATE.profile.dob    = document.getElementById('profile-dob').value;
+  STATE.profile.gender = document.getElementById('profile-gender').value;
+  STATE.profile.weight = document.getElementById('profile-weight').value;
+  STATE.profile.height = document.getElementById('profile-height').value;
+  save();
+  var al = document.getElementById('profile-alert');
+  al.className='alert alert-success'; al.textContent='Profiel opgeslagen!'; al.style.display='block';
+  setTimeout(function(){ al.style.display='none'; },2500);
+  updateBMI();
+});
+
+// Doelen opslaan via profiel
+var saveProfileGoalsBtn = document.getElementById('save-profile-goals');
+if(saveProfileGoalsBtn) saveProfileGoalsBtn.addEventListener('click', function(){
+  STATE.goals.cal       = parseFloat(document.getElementById('profile-goal-cal').value)||2000;
+  STATE.goals.prot      = parseFloat(document.getElementById('profile-goal-prot').value)||100;
+  STATE.goals.carb      = parseFloat(document.getElementById('profile-goal-carb').value)||250;
+  STATE.goals.fat       = parseFloat(document.getElementById('profile-goal-fat').value)||70;
+  STATE.goals.waterGoal = parseFloat(document.getElementById('profile-goal-water').value)||2000;
+  STATE.goals.sugarLow  = parseFloat(document.getElementById('profile-sugar-low').value)||3.9;
+  STATE.goals.sugarHigh = parseFloat(document.getElementById('profile-sugar-high').value)||10.0;
+  save();
+  var al = document.getElementById('profile-goals-alert');
+  al.className='alert alert-success'; al.textContent='Doelen opgeslagen!'; al.style.display='block';
+  setTimeout(function(){ al.style.display='none'; },2500);
+  renderDashboard();
+});
+
+// Diabetes instellingen opslaan
+var saveDiabetesBtn = document.getElementById('save-diabetes-settings');
+if(saveDiabetesBtn) saveDiabetesBtn.addEventListener('click', function(){
+  STATE.profile.diabetesType = document.getElementById('profile-diabetes-type').value;
+  STATE.profile.device       = document.getElementById('profile-device').value;
+  STATE.profile.khRatio      = document.getElementById('profile-kh-ratio').value;
+  STATE.profile.correction   = document.getElementById('profile-correction').value;
+  save();
+  var al = document.getElementById('diabetes-alert');
+  al.className='alert alert-success'; al.textContent='Instellingen opgeslagen!'; al.style.display='block';
+  setTimeout(function(){ al.style.display='none'; },2500);
+});
+
+// Naar profiel knop vanuit instellingen
+var gotoProfielBtn = document.getElementById('goto-profiel-btn');
+if(gotoProfielBtn) gotoProfielBtn.addEventListener('click', function(){ setActivePage('profiel'); });
+
+// ─── INSTELLINGEN (oud) ───────────────────────────────────
+function loadGoals() { loadProfile(); }
 
 // ─── HERINNERINGEN ────────────────────────────────────────
 
