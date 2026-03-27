@@ -518,6 +518,13 @@
     <div style="font-size:12px;color:var(--muted);" id="water-today-nav">0 ml vandaag</div>
   </div>
   <div class="card">
+    <!-- Datum voor snelknoppen -->
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:.875rem;">
+      <div class="form-group" style="max-width:200px;margin:0;">
+        <label>Datum <span style="color:var(--muted);font-size:10px;">optioneel — geldt voor alle invoer</span></label>
+        <input type="datetime-local" id="drink-date">
+      </div>
+    </div>
     <!-- Snelknoppen -->
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.875rem;">
       <button class="btn btn-secondary drink-quick" data-drink="Water" data-ml="200" data-cal="0" data-prot="0" data-carb="0" data-fat="0" style="flex:1;min-width:80px;text-align:center;">💧 Water<br><span style="font-size:10px;color:var(--muted);">200 ml</span></button>
@@ -571,10 +578,6 @@
       </div>
 
       <div style="display:flex;gap:8px;align-items:flex-end;margin-top:.5rem;">
-        <div class="form-group" style="max-width:170px;margin:0;">
-          <label>Datum <span style="color:var(--muted);font-size:10px;">optioneel</span></label>
-          <input type="datetime-local" id="drink-date">
-        </div>
         <button class="btn btn-primary" id="drink-save" style="flex:1;">Drank opslaan</button>
       </div>
     </div>
@@ -843,9 +846,18 @@
     </div>
   </div>
 
-  <!-- MAALTIJDEN -->
+  <!-- TREND ANALYSE -->
   <div class="section-header" style="margin-top:1.25rem;">
-    <div class="section-title">Maaltijden</div>
+    <div class="section-title">Trends & inzichten</div>
+  </div>
+  <div id="trend-insights"></div>
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">7-daagse trend — calorieën per dag</div>
+    <canvas id="trend-cal-chart" height="120"></canvas>
+  </div>
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">7-daagse trend — bloedsuiker gemiddelde per dag</div>
+    <canvas id="trend-sugar-chart" height="100"></canvas>
   </div>
   <div id="dash-meals"></div>
 
@@ -897,13 +909,20 @@
     </div>
     <div id="trash-entries"><div class="empty">Prullenbak laden...</div></div>
   </div>
-  <div id="log-filter" style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+  <div id="log-filter" style="display:flex;gap:8px;margin-bottom:.75rem;flex-wrap:wrap;">
     <button class="btn btn-secondary btn-sm active-filter" data-filter="all">Alles</button>
     <button class="btn btn-secondary btn-sm" data-filter="meal">Maaltijden</button>
     <button class="btn btn-secondary btn-sm" data-filter="drink">Drinken</button>
     <button class="btn btn-secondary btn-sm" data-filter="sugar">Bloedsuiker</button>
     <button class="btn btn-secondary btn-sm" data-filter="insulin">Insuline</button>
     <button class="btn btn-secondary btn-sm" data-filter="sport">Sport</button>
+  </div>
+  <!-- Zoek en datum filter -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;">
+    <input type="text" id="log-search" placeholder="🔍 Zoek in logboek..." style="flex:1;min-width:150px;">
+    <input type="date" id="log-date-from" style="max-width:140px;" title="Van datum">
+    <input type="date" id="log-date-to" style="max-width:140px;" title="Tot datum">
+    <button class="btn btn-secondary btn-sm" id="log-clear-filter">Wis filter</button>
   </div>
   <div id="log-entries"></div>
 </div>
@@ -994,9 +1013,21 @@
     <button class="btn btn-primary" id="save-diabetes-settings" style="margin-top:.75rem;">Opslaan</button>
     <div id="diabetes-alert" style="display:none;margin-top:.5rem;"></div>
   </div>
+  <div class="card">
+    <div class="card-title">Wachtwoord wijzigen</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:.875rem;">Alleen van toepassing als je bent ingelogd met e-mail.</div>
+    <div class="form-group" style="margin-bottom:.75rem;">
+      <label>Nieuw wachtwoord <span style="color:var(--muted);font-size:10px;">min. 6 tekens</span></label>
+      <input type="password" id="new-password" placeholder="Nieuw wachtwoord">
+    </div>
+    <div class="form-group" style="margin-bottom:.75rem;">
+      <label>Herhaal nieuw wachtwoord</label>
+      <input type="password" id="new-password2" placeholder="Herhaal wachtwoord">
+    </div>
+    <button class="btn btn-primary" id="change-password-btn">Wachtwoord wijzigen</button>
+    <div id="password-alert" style="display:none;margin-top:.5rem;"></div>
+  </div>
 </div>
-
-<!-- PAGE: INSTELLINGEN -->
 <div class="page" id="page-instellingen">
   <div class="section-title" style="margin-bottom:1rem;">Herinneringen</div>
   <div class="card">
@@ -1255,6 +1286,15 @@
     </div>
     <div id="feedback-alert" style="display:none;margin-bottom:.75rem;"></div>
     <button class="btn btn-primary" id="feedback-send" style="width:100%;">Verstuur feedback</button>
+  </div>
+
+  <!-- MIJN FEEDBACK (voor alle gebruikers) -->
+  <div id="my-feedback-section" style="display:none;">
+    <div class="section-header" style="margin-top:1.5rem;">
+      <div class="section-title">Mijn ingediende feedback</div>
+      <button class="btn btn-secondary btn-sm" id="my-feedback-refresh">↻</button>
+    </div>
+    <div id="my-feedback-list"><div class="empty">Laden...</div></div>
   </div>
 
   <!-- ADMIN: FEEDBACK OVERZICHT -->
@@ -2526,6 +2566,7 @@ function renderDashboard(){
   renderMacroChart(prot, carb, fat, goalProt, goalCarb, goalFat);
   renderWaterChart(waterTotal, waterGoal, drinks);
   renderSugarChart(sugars);
+  renderTrendCharts();
 
   // suiker
   var sugars = filtered.filter(function(e){ return e.kind==='sugar'; });
@@ -2551,6 +2592,8 @@ function renderDashboard(){
   if(!meals.length){ mealEl.innerHTML='<div class="empty">Geen maaltijden in deze periode.</div>'; }
   else {
     mealEl.innerHTML = meals.slice().reverse().map(function(e){
+      var khRatio = STATE.profile && STATE.profile.khRatio ? parseFloat(STATE.profile.khRatio) : 0;
+      var advisedInsulin = khRatio > 0 ? Math.round(e.carb / khRatio * 10)/10 : null;
       return '<div class="log-entry entry-meal">' +
         '<div style="flex:1;">' +
           '<div class="type-tag">'+e.type+'</div>' +
@@ -2558,7 +2601,9 @@ function renderDashboard(){
           '<div><span class="pill pill-cal">'+e.cal+' kcal</span>' +
           '<span class="pill pill-prot">'+e.prot+'g eiwit</span>' +
           '<span class="pill pill-carb">'+e.carb+'g koolh</span>' +
-          '<span class="pill pill-fat">'+e.fat+'g vet</span></div>' +
+          '<span class="pill pill-fat">'+e.fat+'g vet</span>' +
+          (advisedInsulin ? '<span class="pill" style="background:rgba(79,142,247,0.15);color:var(--accent);">💉 ~'+advisedInsulin+'E insuline</span>' : '') +
+          '</div>' +
         '</div>' +
         '<div class="time-badge">'+displayTs(e.ts)+'</div>' +
       '</div>';
@@ -2934,8 +2979,27 @@ async function renderTrash() {
 }
 
 function renderLog(){
+  var searchQ   = (document.getElementById('log-search')    ? document.getElementById('log-search').value.toLowerCase()    : '');
+  var dateFrom  = (document.getElementById('log-date-from') ? document.getElementById('log-date-from').value : '');
+  var dateTo    = (document.getElementById('log-date-to')   ? document.getElementById('log-date-to').value   : '');
+
   var filtered = STATE.entries.filter(function(e){
-    return activeFilter==='all' || e.kind===activeFilter;
+    // Type filter
+    if(activeFilter !== 'all' && e.kind !== activeFilter) return false;
+    // Datum filter
+    if(dateFrom){ var d=new Date(e.ts); var f=new Date(dateFrom); f.setHours(0,0,0,0); if(d<f) return false; }
+    if(dateTo)  { var d=new Date(e.ts); var t=new Date(dateTo);   t.setHours(23,59,59,999); if(d>t) return false; }
+    // Zoekfilter
+    if(searchQ){
+      var text = '';
+      if(e.kind==='meal')    text = (e.desc+' '+e.type).toLowerCase();
+      if(e.kind==='drink')   text = (e.drink||'').toLowerCase();
+      if(e.kind==='sugar')   text = ('bloedsuiker '+e.moment+' '+e.val).toLowerCase();
+      if(e.kind==='insulin') text = ('insuline '+e.type+' '+e.units).toLowerCase();
+      if(e.kind==='sport')   text = (e.desc+' '+e.intensity).toLowerCase();
+      if(text.indexOf(searchQ) < 0) return false;
+    }
+    return true;
   }).slice().reverse();
 
   var el=document.getElementById('log-entries');
@@ -3346,7 +3410,7 @@ document.querySelectorAll('.drink-quick').forEach(function(btn){
     var carb  = parseFloat(btn.dataset.carb||0);
     var fat   = parseFloat(btn.dataset.fat||0);
     setSyncStatus('saving');
-    await saveEntry({ kind:'drink', ts:fullTs(), drink:drink, ml:ml, cal:cal, prot:prot, carb:carb, fat:fat });
+    await saveEntry({ kind:'drink', ts:tsFromInput('drink-date'), drink:drink, ml:ml, cal:cal, prot:prot, carb:carb, fat:fat });
     setSyncStatus('ok');
     updateWaterNav();
     showDrinkAlert(drink+' ('+ml+' ml) toegevoegd!', 'success');
@@ -3663,6 +3727,178 @@ document.getElementById('reset-btn').addEventListener('click', async function(){
   }
 });
 
+// ─── LOGBOEK ZOEK & DATUMFILTER ───────────────────────────
+var logSearchEl = document.getElementById('log-search');
+var logDateFrom = document.getElementById('log-date-from');
+var logDateTo   = document.getElementById('log-date-to');
+
+if(logSearchEl) logSearchEl.addEventListener('input', renderLog);
+if(logDateFrom) logDateFrom.addEventListener('change', renderLog);
+if(logDateTo)   logDateTo.addEventListener('change', renderLog);
+
+var logClearBtn = document.getElementById('log-clear-filter');
+if(logClearBtn) logClearBtn.addEventListener('click', function(){
+  if(logSearchEl) logSearchEl.value = '';
+  if(logDateFrom) logDateFrom.value = '';
+  if(logDateTo)   logDateTo.value = '';
+  renderLog();
+});
+
+// ─── WACHTWOORD WIJZIGEN ──────────────────────────────────
+var changePwBtn = document.getElementById('change-password-btn');
+if(changePwBtn) changePwBtn.addEventListener('click', async function(){
+  var pw1 = document.getElementById('new-password').value;
+  var pw2 = document.getElementById('new-password2').value;
+  var al  = document.getElementById('password-alert');
+
+  if(pw1.length < 6){ al.className='alert alert-danger'; al.textContent='Wachtwoord moet minimaal 6 tekens zijn.'; al.style.display='block'; return; }
+  if(pw1 !== pw2)   { al.className='alert alert-danger'; al.textContent='Wachtwoorden komen niet overeen.'; al.style.display='block'; return; }
+
+  try {
+    var { updatePassword } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+    await updatePassword(auth.currentUser, pw1);
+    al.className='alert alert-success'; al.textContent='Wachtwoord gewijzigd!'; al.style.display='block';
+    document.getElementById('new-password').value='';
+    document.getElementById('new-password2').value='';
+    setTimeout(function(){ al.style.display='none'; },3000);
+  } catch(e) {
+    al.className='alert alert-danger';
+    if(e.code==='auth/requires-recent-login'){
+      al.textContent='Log opnieuw in om je wachtwoord te wijzigen.';
+    } else {
+      al.textContent='Fout: '+e.message;
+    }
+    al.style.display='block';
+  }
+});
+
+// ─── TREND ANALYSE ────────────────────────────────────────
+var trendCalChartInst  = null;
+var trendSugarChartInst = null;
+
+function renderTrendCharts() {
+  loadChartJS(function(){
+    var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var textColor = isDark ? '#eef0f5' : '#374151';
+    var gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+
+    // Laatste 7 dagen
+    var days = [];
+    var dayLabels = [];
+    for(var i=6; i>=0; i--){
+      var d = new Date();
+      d.setDate(d.getDate()-i);
+      d.setHours(0,0,0,0);
+      days.push(d);
+      dayLabels.push(d.toLocaleDateString('nl-NL',{weekday:'short',day:'numeric'}));
+    }
+
+    // Calorieën per dag
+    var calPerDay = days.map(function(d){
+      var next = new Date(d); next.setDate(d.getDate()+1);
+      return STATE.entries.filter(function(e){
+        var t=new Date(e.ts); return e.kind==='meal' && t>=d && t<next;
+      }).reduce(function(s,e){ return s+e.cal; },0);
+    });
+
+    // Gem bloedsuiker per dag
+    var sugarPerDay = days.map(function(d){
+      var next = new Date(d); next.setDate(d.getDate()+1);
+      var dayS = STATE.entries.filter(function(e){
+        var t=new Date(e.ts); return e.kind==='sugar' && t>=d && t<next;
+      });
+      if(!dayS.length) return null;
+      return Math.round(dayS.reduce(function(s,e){ return s+e.val; },0)/dayS.length*10)/10;
+    });
+
+    var goalCal = STATE.goals.cal||2000;
+    var low = STATE.goals.sugarLow||3.9;
+    var high = STATE.goals.sugarHigh||10;
+
+    // Trend inzichten
+    var insightsEl = document.getElementById('trend-insights');
+    if(insightsEl){
+      var insights = [];
+      var daysWithData = calPerDay.filter(function(v){ return v>0; });
+      if(daysWithData.length){
+        var avgCal = Math.round(daysWithData.reduce(function(s,v){return s+v;},0)/daysWithData.length);
+        var diff = avgCal - goalCal;
+        if(Math.abs(diff) < 150)  insights.push({ icon:'🎯', text:'Gemiddeld '+avgCal+' kcal/dag — je zit dicht bij je caloriedoel van '+goalCal+' kcal.', color:'var(--success)' });
+        else if(diff > 0)         insights.push({ icon:'⚠️', text:'Gemiddeld '+avgCal+' kcal/dag — '+diff+' kcal boven je doel van '+goalCal+' kcal.', color:'var(--warning)' });
+        else                      insights.push({ icon:'📉', text:'Gemiddeld '+avgCal+' kcal/dag — '+Math.abs(diff)+' kcal onder je doel van '+goalCal+' kcal.', color:'var(--accent)' });
+      }
+      var sugarVals = sugarPerDay.filter(function(v){ return v!==null; });
+      if(sugarVals.length){
+        var avgSugar = Math.round(sugarVals.reduce(function(s,v){return s+v;},0)/sugarVals.length*10)/10;
+        if(avgSugar>=low && avgSugar<=high) insights.push({ icon:'✅', text:'Gemiddelde bloedsuiker '+avgSugar+' mmol/L — in range!', color:'var(--success)' });
+        else if(avgSugar<low)              insights.push({ icon:'🔴', text:'Gemiddelde bloedsuiker '+avgSugar+' mmol/L — let op: gemiddeld te laag.', color:'var(--danger)' });
+        else                               insights.push({ icon:'🟡', text:'Gemiddelde bloedsuiker '+avgSugar+' mmol/L — gemiddeld te hoog.', color:'var(--warning)' });
+      }
+      if(!insights.length){
+        insightsEl.innerHTML = '';
+      } else {
+        insightsEl.innerHTML = insights.map(function(ins){
+          return '<div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid '+ins.color+';border-radius:var(--radius-sm);padding:.75rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:10px;">' +
+            '<span style="font-size:18px;">'+ins.icon+'</span>' +
+            '<span style="font-size:13px;color:var(--muted);">'+ins.text+'</span>' +
+          '</div>';
+        }).join('');
+      }
+    }
+
+    // Calorieën trend grafiek
+    var ctxCal = document.getElementById('trend-cal-chart');
+    if(ctxCal){
+      if(trendCalChartInst) trendCalChartInst.destroy();
+      trendCalChartInst = new Chart(ctxCal,{
+        type:'bar',
+        data:{
+          labels:dayLabels,
+          datasets:[
+            { label:'Calorieën', data:calPerDay, backgroundColor:'rgba(79,142,247,0.7)', borderRadius:4 },
+            { label:'Doel '+goalCal, data:days.map(function(){return goalCal;}), type:'line', borderColor:'rgba(79,142,247,0.4)', borderDash:[4,4], pointRadius:0, fill:false }
+          ]
+        },
+        options:{
+          responsive:true, interaction:{mode:'index',intersect:false},
+          plugins:{ legend:{labels:{color:textColor,font:{size:11}}} },
+          scales:{
+            x:{ticks:{color:textColor,font:{size:10}},grid:{color:gridColor}},
+            y:{ticks:{color:textColor,font:{size:10},callback:function(v){return v+' kcal';}},grid:{color:gridColor},beginAtZero:true}
+          }
+        }
+      });
+    }
+
+    // Bloedsuiker trend grafiek
+    var ctxSugar = document.getElementById('trend-sugar-chart');
+    if(ctxSugar){
+      if(trendSugarChartInst) trendSugarChartInst.destroy();
+      trendSugarChartInst = new Chart(ctxSugar,{
+        type:'line',
+        data:{
+          labels:dayLabels,
+          datasets:[
+            { label:'Gem. bloedsuiker', data:sugarPerDay, borderColor:'#a78bfa', backgroundColor:'rgba(167,139,250,0.1)', fill:true, tension:0.3, pointRadius:5,
+              pointBackgroundColor:sugarPerDay.map(function(v){ return v===null?'transparent':v<low?'#f87171':v>high?'#fbbf24':'#6ee7b7'; }),
+              spanGaps:true },
+            { label:'Laag ('+low+')', data:days.map(function(){return low;}), borderColor:'rgba(248,113,113,0.4)', borderDash:[4,4], pointRadius:0, fill:false },
+            { label:'Hoog ('+high+')', data:days.map(function(){return high;}), borderColor:'rgba(251,191,36,0.4)', borderDash:[4,4], pointRadius:0, fill:false }
+          ]
+        },
+        options:{
+          responsive:true, interaction:{mode:'index',intersect:false},
+          plugins:{ legend:{labels:{color:textColor,font:{size:11}}} },
+          scales:{
+            x:{ticks:{color:textColor,font:{size:10}},grid:{color:gridColor}},
+            y:{ticks:{color:textColor,font:{size:10},callback:function(v){return v+' mmol/L';}},grid:{color:gridColor},beginAtZero:false}
+          }
+        }
+      });
+    }
+  });
+}
+
 // ─── TIP SYSTEEM ──────────────────────────────────────────
 var TIPS = [
   'Gebruik de barcode scanner om snel een product toe te voegen — richt je camera op de verpakking.',
@@ -3835,6 +4071,20 @@ async function loadFeedback(filterType) {
   } catch(e) { return []; }
 }
 
+async function loadMyFeedback() {
+  if(!USER_ID) return [];
+  try {
+    var q = query(collection(db, 'feedback'), orderBy('ts', 'desc'));
+    var snap = await getDocs(q);
+    var items = [];
+    snap.forEach(function(d){
+      var item = Object.assign({ id: d.id }, d.data());
+      if(item.uid === USER_ID) items.push(item);
+    });
+    return items;
+  } catch(e) { return []; }
+}
+
 async function markFeedbackRead(id) {
   try {
     await setDoc(doc(db, 'feedback', id), { gelezen: true }, { merge: true });
@@ -3857,11 +4107,20 @@ function renderFeedbackList(items) {
           '<span style="font-size:11px;color:var(--muted);">van '+item.naam+'</span>' +
           (!item.gelezen ? '<span style="font-size:10px;background:rgba(79,142,247,0.2);color:var(--accent);padding:1px 7px;border-radius:999px;">Nieuw</span>' : '') +
         '</div>' +
-        '<div style="font-size:14px;line-height:1.6;">'+item.msg+'</div>' +
+        '<div style="font-size:14px;line-height:1.6;margin-bottom:6px;">'+item.msg+'</div>' +
+        (item.antwoord ? '<div style="font-size:12px;background:rgba(110,231,183,0.08);border:1px solid rgba(110,231,183,0.2);border-radius:var(--radius-sm);padding:6px 10px;color:var(--success);margin-bottom:6px;">✓ Jouw antwoord: '+item.antwoord+'</div>' : '') +
+        (isAdmin() ?
+          '<div style="display:flex;gap:6px;margin-top:4px;">' +
+            '<input type="text" class="reply-input" data-id="'+item.id+'" placeholder="Antwoord typen..." style="flex:1;font-size:12px;padding:5px 8px;" value="'+(item.antwoord||'')+'">' +
+            '<button class="btn btn-secondary btn-sm reply-send-btn" data-id="'+item.id+'">Stuur</button>' +
+          '</div>'
+        : (item.antwoord ?
+          '<div style="font-size:12px;background:rgba(110,231,183,0.08);border:1px solid rgba(110,231,183,0.2);border-radius:var(--radius-sm);padding:6px 10px;color:var(--success);">✓ Reactie ontvangen: '+item.antwoord+'</div>'
+          : '')) +
       '</div>' +
       '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">' +
         '<div class="time-badge">'+displayTs(item.ts)+'</div>' +
-        (!item.gelezen ? '<button class="btn btn-secondary btn-sm mark-read-btn" data-id="'+item.id+'">✓ Gelezen</button>' : '') +
+        (isAdmin() && !item.gelezen ? '<button class="btn btn-secondary btn-sm mark-read-btn" data-id="'+item.id+'">✓ Gelezen</button>' : '') +
       '</div>' +
     '</div>';
   }).join('');
@@ -3870,6 +4129,19 @@ function renderFeedbackList(items) {
     btn.addEventListener('click', async function(){
       await markFeedbackRead(btn.dataset.id);
       await refreshFeedbackAdmin();
+    });
+  });
+
+  el.querySelectorAll('.reply-send-btn').forEach(function(btn){
+    btn.addEventListener('click', async function(){
+      var input = el.querySelector('.reply-input[data-id="'+btn.dataset.id+'"]');
+      var antwoord = input ? input.value.trim() : '';
+      if(!antwoord) return;
+      try {
+        await setDoc(doc(db, 'feedback', btn.dataset.id), { antwoord: antwoord, gelezen: true }, { merge: true });
+        btn.textContent = '✓';
+        setTimeout(function(){ refreshFeedbackAdmin(); }, 500);
+      } catch(e) { console.error('Antwoord sturen mislukt:', e); }
     });
   });
 
@@ -3913,6 +4185,7 @@ document.getElementById('feedback-send').addEventListener('click', async functio
     al.textContent='Bedankt voor je feedback! We nemen dit mee in de verdere ontwikkeling van DT1 Tracker.';
     al.style.display='block';
     document.getElementById('feedback-msg').value='';
+    refreshMyFeedback();
   } else {
     al.className='alert alert-danger';
     al.textContent='Er ging iets mis. Probeer het opnieuw.';
@@ -3932,11 +4205,48 @@ if(feedbackRefreshEl) {
 
 // Toon admin-sectie en laad feedback als admin
 function initFeedbackAdmin() {
-  if(!isAdmin()) return;
-  var section = document.getElementById('admin-feedback-section');
-  if(section) section.style.display = 'block';
-  refreshFeedbackAdmin();
+  // Admin sectie
+  if(isAdmin()) {
+    var section = document.getElementById('admin-feedback-section');
+    if(section) section.style.display = 'block';
+    refreshFeedbackAdmin();
+  }
+
+  // Mijn feedback sectie (voor alle gebruikers)
+  var mySection = document.getElementById('my-feedback-section');
+  if(mySection) {
+    mySection.style.display = 'block';
+    refreshMyFeedback();
+  }
 }
+
+async function refreshMyFeedback() {
+  var el = document.getElementById('my-feedback-list');
+  if(!el) return;
+  el.innerHTML = '<div class="empty" style="color:var(--muted);">Laden...</div>';
+  var items = await loadMyFeedback();
+  if(!items.length){
+    el.innerHTML = '<div class="empty">Je hebt nog geen feedback ingediend.</div>';
+    return;
+  }
+  var typeLabels = { feedback: '💬 Algemeen', bug: '🐛 Bug', feature: '✨ Functie' };
+  var typeColors = { feedback: 'var(--accent)', bug: 'var(--danger)', feature: 'var(--success)' };
+  el.innerHTML = items.map(function(item){
+    return '<div class="log-entry" style="border-left:3px solid '+(typeColors[item.type]||'var(--accent)')+';">' +
+      '<div style="flex:1;">' +
+        '<div style="font-size:11px;color:'+(typeColors[item.type]||'var(--accent)')+';font-weight:500;margin-bottom:4px;">'+(typeLabels[item.type]||item.type)+'</div>' +
+        '<div style="font-size:13px;margin-bottom:6px;">'+item.msg+'</div>' +
+        (item.antwoord ?
+          '<div style="font-size:12px;background:rgba(110,231,183,0.08);border:1px solid rgba(110,231,183,0.2);border-radius:var(--radius-sm);padding:6px 10px;color:var(--success);">✓ Reactie: '+item.antwoord+'</div>'
+          : '<div style="font-size:11px;color:var(--muted);">Nog geen reactie ontvangen</div>') +
+      '</div>' +
+      '<div class="time-badge" style="flex-shrink:0;">'+displayTs(item.ts)+'</div>' +
+    '</div>';
+  }).join('');
+}
+
+var myFeedbackRefreshBtn = document.getElementById('my-feedback-refresh');
+if(myFeedbackRefreshBtn) myFeedbackRefreshBtn.addEventListener('click', refreshMyFeedback);
 
 // ─── INIT ─────────────────────────────────────────────────
 // init
