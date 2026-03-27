@@ -177,10 +177,103 @@
 
   /* GRID 2 */
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  /* ── RESPONSIVE ─────────────────────────────────────────── */
+
+  /* Tablet (max 768px) */
+  @media(max-width: 768px) {
+    .page { padding: 1rem; }
+    .stat-grid { grid-template-columns: repeat(3, 1fr); }
+    .form-row { gap: 8px; }
+    .card { padding: 1rem; }
+    nav { padding: 0 1rem; height: 52px; }
+  }
+
+  /* Mobiel (max 600px) */
   @media(max-width: 600px) {
-    .grid2 { grid-template-columns: 1fr; }
-    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    /* Nav — verberg tabs en tijd, toon bottom nav */
+    .nav-tabs { display: none; }
     .nav-time { display: none; }
+    .nav-logo { font-size: 13px; }
+    nav { height: 48px; padding: 0 1rem; }
+
+    /* Bottom navigatie voor mobiel */
+    #bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(15,17,23,0.97);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      z-index: 100;
+      padding: 0;
+      height: 58px;
+    }
+    .bottom-nav-btn {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 3px; border: none; background: none;
+      color: var(--muted); cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 9px; font-weight: 500;
+      padding: 6px 2px;
+      transition: color 0.15s;
+    }
+    .bottom-nav-btn .bnav-icon { font-size: 18px; line-height: 1; }
+    .bottom-nav-btn.active { color: var(--accent); }
+    .bottom-nav-btn.active .bnav-icon { filter: drop-shadow(0 0 4px var(--accent)); }
+
+    /* Extra ruimte onderaan voor bottom nav */
+    .page { padding: 1rem 1rem 72px 1rem; }
+
+    /* Grids */
+    .grid2 { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+    /* Cards */
+    .card { padding: .875rem; border-radius: var(--radius-sm); }
+
+    /* Stat boxes kleiner */
+    .stat-box .val { font-size: 18px; }
+    .stat-box { padding: .75rem .5rem; }
+
+    /* Forms */
+    .form-row { flex-direction: column; gap: 8px; }
+    .form-group { min-width: unset; }
+
+    /* Knoppen op mobiel vol breed */
+    .btn { padding: 10px 14px; font-size: 13px; }
+
+    /* Log entries */
+    .log-entry { padding: .75rem; gap: 8px; }
+    .log-entry .desc { font-size: 13px; }
+
+    /* Section header */
+    .section-header { flex-wrap: wrap; gap: 8px; }
+
+    /* Dash filter knoppen */
+    .dash-period, .dash-mealtype { font-size: 11px; padding: 4px 8px; }
+
+    /* Ingredient row */
+    .ingredient-row { flex-wrap: wrap; }
+
+    /* Search results groter voor touch */
+    .search-item { padding: 12px; }
+
+    /* Welkomst modal */
+    #welcome-modal > div { padding: 1.5rem; }
+
+    /* Verberg sync status tekst op heel kleine schermen */
+    #sync-status { display: none; }
+  }
+
+  /* Heel klein (max 380px) */
+  @media(max-width: 380px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .stat-box .val { font-size: 16px; }
+    .pill { font-size: 10px; padding: 1px 6px; }
+    .card { padding: .75rem; }
+    .page { padding: .75rem .75rem 72px .75rem; }
   }
 
   /* ALERT */
@@ -277,6 +370,30 @@
     <div class="nav-time" id="nav-time"></div>
   </div>
 </nav>
+
+<!-- BOTTOM NAV (mobiel) -->
+<div id="bottom-nav" style="display:none;">
+  <button class="bottom-nav-btn active" data-page="invoer">
+    <span class="bnav-icon">✏️</span>
+    <span>Invoer</span>
+  </button>
+  <button class="bottom-nav-btn" data-page="dashboard">
+    <span class="bnav-icon">📊</span>
+    <span>Dashboard</span>
+  </button>
+  <button class="bottom-nav-btn" data-page="logboek">
+    <span class="bnav-icon">📋</span>
+    <span>Logboek</span>
+  </button>
+  <button class="bottom-nav-btn" data-page="instellingen">
+    <span class="bnav-icon">⚙️</span>
+    <span>Instellingen</span>
+  </button>
+  <button class="bottom-nav-btn" data-page="info">
+    <span class="bnav-icon">ℹ️</span>
+    <span>Info</span>
+  </button>
+</div>
 
 <!-- LOADING OVERLAY -->
 <div id="loading-overlay" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;">
@@ -1490,17 +1607,47 @@ setInterval(function(){
 }, 10000);
 document.getElementById('nav-time').textContent = timeStr();
 
-// ─── NAV ──────────────────────────────────────────────────
+// ─── BOTTOM NAV (mobiel) ──────────────────────────────────
+function isMobile() { return window.innerWidth <= 600; }
+
+function showBottomNav() {
+  document.getElementById('bottom-nav').style.display = isMobile() ? 'flex' : 'none';
+}
+showBottomNav();
+window.addEventListener('resize', showBottomNav);
+
+function setActivePage(page) {
+  // Top nav
+  document.querySelectorAll('.nav-tab').forEach(function(b){ b.classList.remove('active'); });
+  var topBtn = document.querySelector('.nav-tab[data-page="'+page+'"]');
+  if(topBtn) topBtn.classList.add('active');
+
+  // Bottom nav
+  document.querySelectorAll('.bottom-nav-btn').forEach(function(b){ b.classList.remove('active'); });
+  var botBtn = document.querySelector('.bottom-nav-btn[data-page="'+page+'"]');
+  if(botBtn) botBtn.classList.add('active');
+
+  // Pages
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  var pageEl = document.getElementById('page-'+page);
+  if(pageEl) pageEl.classList.add('active');
+
+  // Scroll naar boven
+  window.scrollTo(0, 0);
+
+  if(page==='dashboard') renderDashboard();
+  if(page==='logboek') renderLog();
+  if(page==='info') renderFAQ();
+}
+
+// Top nav clicks
 document.querySelectorAll('.nav-tab').forEach(function(btn){
-  btn.addEventListener('click', function(){
-    document.querySelectorAll('.nav-tab').forEach(function(b){ b.classList.remove('active'); });
-    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-    btn.classList.add('active');
-    document.getElementById('page-'+btn.dataset.page).classList.add('active');
-    if(btn.dataset.page==='dashboard') renderDashboard();
-    if(btn.dataset.page==='logboek') renderLog();
-    if(btn.dataset.page==='info') renderFAQ();
-  });
+  btn.addEventListener('click', function(){ setActivePage(btn.dataset.page); });
+});
+
+// Bottom nav clicks
+document.querySelectorAll('.bottom-nav-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){ setActivePage(btn.dataset.page); });
 });
 
 // ─── ALERT HELPERS ────────────────────────────────────────
