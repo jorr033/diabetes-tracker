@@ -12,7 +12,7 @@
 |---|---------|-------------|------|
 | 1 | **Barcode scanner verbeteren** | Cross-browser ondersteuning verbeteren, betere foutafhandeling en fallback als camera niet beschikbaar is | Enhancement |
 | 2 | **Logboek paginering** | Bij veel entries wordt de lijst erg lang. Paginering of virtueel scrollen toevoegen voor betere performance | Enhancement |
-| 3 | **Versiehistorie bijwerken naar v1.5** | Alle nieuwe features van de laatste sprint documenteren in de Info & FAQ pagina | Tech-debt |
+| 3 | **Versiehistorie bijwerken naar v1.6** | Alle nieuwe features van de laatste sprint documenteren in de Info & FAQ pagina | Tech-debt |
 
 ---
 
@@ -78,3 +78,5 @@
 | Wachtwoord wijzigen in profiel | v1.5 | Mrt 2026 |
 | Feedback systeem met admin antwoordmogelijkheid | v1.5 | Mrt 2026 |
 | Snelknoppen drinken met datumondersteuning | v1.5 | Mrt 2026 |
+| AI macro-inschatting via Claude API (maaltijden + dranken) | v1.6 | Mrt 2026 |
+| Open Food Facts verbeterd (NL database + meer resultaten) | v1.6 | Mrt 2026 |

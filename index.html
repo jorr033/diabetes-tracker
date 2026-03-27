@@ -538,9 +538,26 @@
       <div class="form-group" style="margin-bottom:.5rem;">
         <label>Zoek drank</label>
         <div class="search-wrap">
-          <input type="text" id="drink-search" placeholder="bijv. cola, sportdrank, melk, sap..." autocomplete="off">
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="drink-search" placeholder="bijv. cola, sportdrank, melk, sap..." autocomplete="off" style="flex:1;">
+            <button class="btn btn-secondary" id="ai-drink-btn" style="flex:0 0 auto;padding:8px 12px;" title="Schat macros met AI">🤖</button>
+          </div>
           <div class="search-results" id="drink-search-results" style="display:none;"></div>
         </div>
+      </div>
+
+      <!-- AI INSCHATTING PANEEL DRANKEN -->
+      <div id="ai-drink-panel" style="display:none;background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.2);border-radius:var(--radius-sm);padding:.875rem;margin-bottom:.75rem;">
+        <div style="font-size:12px;font-weight:500;color:var(--accent);margin-bottom:.5rem;">🤖 AI macro-inschatting</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:.625rem;">Omschrijf je drank met hoeveelheid en merk indien bekend.</div>
+        <div class="form-group" style="margin-bottom:.5rem;">
+          <input type="text" id="ai-drink-input" placeholder="bijv. 330ml Coca-Cola regular, of 250ml verse sinaasappelsap">
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary btn-sm" id="ai-drink-submit">Schat macros</button>
+          <button class="btn btn-secondary btn-sm" id="ai-drink-close">Sluiten</button>
+        </div>
+        <div id="ai-drink-result" style="display:none;margin-top:.75rem;background:var(--bg3);border-radius:var(--radius-sm);padding:.75rem;"></div>
       </div>
 
       <!-- Geselecteerde drank preview -->
@@ -611,9 +628,24 @@
           <div style="display:flex;gap:6px;">
             <input type="text" id="food-search" placeholder="bijv. kipfilet, Brinta, EAN barcode..." autocomplete="off" style="flex:1;">
             <button class="btn btn-secondary" id="scan-btn" style="flex:0 0 auto;padding:8px 12px;" title="Barcode scannen">📷</button>
+            <button class="btn btn-secondary" id="ai-meal-btn" style="flex:0 0 auto;padding:8px 12px;" title="Schat macros met AI">🤖</button>
           </div>
           <div class="search-results" id="search-results" style="display:none;"></div>
         </div>
+      </div>
+
+      <!-- AI INSCHATTING PANEEL MAALTIJD -->
+      <div id="ai-meal-panel" style="display:none;background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.2);border-radius:var(--radius-sm);padding:.875rem;margin-bottom:.75rem;">
+        <div style="font-size:12px;font-weight:500;color:var(--accent);margin-bottom:.5rem;">🤖 AI macro-inschatting</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:.625rem;">Omschrijf je maaltijd zo specifiek mogelijk — hoeveelheden, bereidingswijze en ingrediënten.</div>
+        <div class="form-group" style="margin-bottom:.5rem;">
+          <input type="text" id="ai-meal-input" placeholder="bijv. 150g gekookte kipfilet, 200g rijst, handje broccoli">
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary btn-sm" id="ai-meal-submit">Schat macros</button>
+          <button class="btn btn-secondary btn-sm" id="ai-meal-close">Sluiten</button>
+        </div>
+        <div id="ai-meal-result" style="display:none;margin-top:.75rem;background:var(--bg3);border-radius:var(--radius-sm);padding:.75rem;"></div>
       </div>
       <div id="scanner-wrap" style="display:none;margin-bottom:.75rem;">
         <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Richt je camera op de barcode:</div>
@@ -1948,21 +1980,32 @@ function mapOFFProduct(p) {
   };
 }
 
-// Open Food Facts zoeken op naam + merk, gesorteerd op populariteit
+// Open Food Facts zoeken — NL database eerst, dan world
 async function offSearch(q) {
   try {
-    var url = 'https://world.openfoodfacts.org/cgi/search.pl'
-      + '?search_terms=' + encodeURIComponent(q)
-      + '&search_simple=1&action=process&json=1&page_size=20&sort_by=unique_scans_n'
-      + '&fields=product_name,nutriments,brands,quantity,serving_size,serving_quantity';
-    var r = await fetch(url);
-    var data = await r.json();
-    if(!data.products) return [];
-    return data.products
-      .filter(function(p){ return p.product_name && p.nutriments; })
+    // Zoek parallel in NL en world database
+    var urls = [
+      'https://nl.openfoodfacts.org/cgi/search.pl?search_terms=' + encodeURIComponent(q) + '&search_simple=1&action=process&json=1&page_size=20&sort_by=unique_scans_n&fields=product_name,nutriments,brands,quantity,serving_size,serving_quantity',
+      'https://world.openfoodfacts.org/cgi/search.pl?search_terms=' + encodeURIComponent(q) + '&search_simple=1&action=process&json=1&page_size=30&sort_by=unique_scans_n&fields=product_name,nutriments,brands,quantity,serving_size,serving_quantity'
+    ];
+    var results = await Promise.all(urls.map(function(url){
+      return fetch(url).then(function(r){ return r.json(); }).catch(function(){ return {products:[]}; });
+    }));
+    // Combineer en dedupliceer op naam
+    var seen = {};
+    var combined = [];
+    results.forEach(function(data){
+      if(!data.products) return;
+      data.products.forEach(function(p){
+        if(!p.product_name || !p.nutriments) return;
+        var key = p.product_name.toLowerCase().trim();
+        if(!seen[key]){ seen[key]=true; combined.push(p); }
+      });
+    });
+    return combined
       .map(mapOFFProduct)
       .filter(function(f){ return f.n.trim().length > 0; })
-      .slice(0, 12);
+      .slice(0, 15);
   } catch(e) { return []; }
 }
 
@@ -3727,7 +3770,124 @@ document.getElementById('reset-btn').addEventListener('click', async function(){
   }
 });
 
-// ─── LOGBOEK ZOEK & DATUMFILTER ───────────────────────────
+// ─── AI MACRO INSCHATTING ─────────────────────────────────
+async function estimateMacrosWithAI(description, context) {
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{
+          role: 'user',
+          content: 'Schat de voedingswaarden van: "' + description + '".\n' +
+            'Geef ALLEEN een JSON object terug, geen tekst:\n' +
+            '{"naam":"productnaam","cal":0,"prot":0.0,"carb":0.0,"fat":0.0,"ml":0,"eenheid":"g of ml"}\n' +
+            'ml is alleen relevant als het een drank is, anders 0.\n' +
+            'Wees zo nauwkeurig mogelijk op basis van standaard voedingswaarden.\n' +
+            'Context: ' + context
+        }]
+      })
+    });
+    var data = await response.json();
+    var text = data.content && data.content[0] ? data.content[0].text : '';
+    var clean = text.replace(/```json|```/g, '').trim();
+    return JSON.parse(clean);
+  } catch(e) { return null; }
+}
+
+function showAIResult(result, panelId, context) {
+  var el = document.getElementById(panelId);
+  if(!el) return;
+  if(!result) {
+    el.innerHTML = '<div style="color:var(--danger);font-size:12px;">Inschatting mislukt. Probeer een duidelijkere omschrijving.</div>';
+    el.style.display = 'block';
+    return;
+  }
+  var isMeal = context === 'meal';
+  el.innerHTML =
+    '<div style="font-size:13px;font-weight:500;margin-bottom:.5rem;">📊 ' + result.naam + '</div>' +
+    '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:.75rem;">' +
+      '<span style="color:var(--accent);">' + Math.round(result.cal) + ' kcal</span>' +
+      '<span style="color:var(--accent2);">' + result.prot + 'g eiwit</span>' +
+      '<span style="color:var(--warning);">' + result.carb + 'g koolh</span>' +
+      '<span style="color:var(--accent3);">' + result.fat + 'g vet</span>' +
+      (result.ml > 0 ? '<span style="color:#60a5fa;">' + result.ml + ' ml</span>' : '') +
+    '</div>' +
+    '<div style="font-size:11px;color:var(--muted);margin-bottom:.5rem;">⚠️ Dit is een AI-inschatting. Werkelijke waarden kunnen afwijken.</div>' +
+    '<button class="btn btn-primary btn-sm" id="ai-add-btn">+ Toevoegen</button>';
+  el.style.display = 'block';
+
+  document.getElementById('ai-add-btn').addEventListener('click', function(){
+    var food = {
+      n: result.naam,
+      cal: Math.round(result.cal),
+      prot: result.prot,
+      carb: result.carb,
+      fat: result.fat,
+      unit: result.ml > 0 ? 'ml' : 'portie',
+      std: result.ml > 0 ? result.ml : 1
+    };
+    if(isMeal) {
+      addIngredient(food);
+      document.getElementById('ai-meal-panel').style.display = 'none';
+      document.getElementById('ai-meal-input').value = '';
+      document.getElementById('ai-meal-result').style.display = 'none';
+    } else {
+      // Drank
+      setSelectedDrink(Object.assign(food, { std: result.ml||100 }));
+      if(result.ml > 0) document.getElementById('drink-ml').value = result.ml;
+      document.getElementById('ai-drink-panel').style.display = 'none';
+      document.getElementById('ai-drink-input').value = '';
+      document.getElementById('ai-drink-result').style.display = 'none';
+    }
+  });
+}
+
+// Maaltijd AI knop
+document.getElementById('ai-meal-btn').addEventListener('click', function(){
+  var panel = document.getElementById('ai-meal-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if(panel.style.display === 'block') document.getElementById('ai-meal-input').focus();
+});
+document.getElementById('ai-meal-close').addEventListener('click', function(){
+  document.getElementById('ai-meal-panel').style.display = 'none';
+});
+document.getElementById('ai-meal-submit').addEventListener('click', async function(){
+  var q = document.getElementById('ai-meal-input').value.trim();
+  if(!q) return;
+  var btn = document.getElementById('ai-meal-submit');
+  btn.textContent = 'Bezig...'; btn.disabled = true;
+  var result = await estimateMacrosWithAI(q, 'meal');
+  btn.textContent = 'Schat macros'; btn.disabled = false;
+  showAIResult(result, 'ai-meal-result', 'meal');
+});
+document.getElementById('ai-meal-input').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') document.getElementById('ai-meal-submit').click();
+});
+
+// Drank AI knop
+document.getElementById('ai-drink-btn').addEventListener('click', function(){
+  var panel = document.getElementById('ai-drink-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if(panel.style.display === 'block') document.getElementById('ai-drink-input').focus();
+});
+document.getElementById('ai-drink-close').addEventListener('click', function(){
+  document.getElementById('ai-drink-panel').style.display = 'none';
+});
+document.getElementById('ai-drink-submit').addEventListener('click', async function(){
+  var q = document.getElementById('ai-drink-input').value.trim();
+  if(!q) return;
+  var btn = document.getElementById('ai-drink-submit');
+  btn.textContent = 'Bezig...'; btn.disabled = true;
+  var result = await estimateMacrosWithAI(q, 'drink');
+  btn.textContent = 'Schat macros'; btn.disabled = false;
+  showAIResult(result, 'ai-drink-result', 'drink');
+});
+document.getElementById('ai-drink-input').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') document.getElementById('ai-drink-submit').click();
+});
 var logSearchEl = document.getElementById('log-search');
 var logDateFrom = document.getElementById('log-date-from');
 var logDateTo   = document.getElementById('log-date-to');
